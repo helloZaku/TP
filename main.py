@@ -12,6 +12,7 @@ def onAppStart(app):
     app.boardHeight = 300
     app.cellBorderWidth = 2
     app.map = []
+    app.player = Player('snake')
     makeMap1(app)
 
 def redrawAll(app):
@@ -53,7 +54,7 @@ def makeMap1(app):
     app.map = [
         [0,0,0,0,0],
         [0,0,0,0,0],
-        [0,1,0,0,0],
+        [0,1,0,2,0],
         [0,0,0,1,0],
         [0,0,0,0,0]
     ]
@@ -64,13 +65,35 @@ def makeMap1(app):
                 if app.map[row][col] == 0:
                     app.map[row][col] = Tiles(left,top,cellWidth,cellHeight)
                 elif app.map[row][col] == 1:
-                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,Enemy('Jimmy',left,top,cellWidth,cellHeight))
-    print(app.map)
+                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,Enemy('Fox',left,top,cellWidth,cellHeight,row,col))
+                elif app.map[row][col] == 2:
+                    app.player.setLocation(left,top,cellWidth,cellHeight,row,col)
+                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,app.player)
 
 def drawTiles(app):
     for row in app.map:
         for tile in row:
             tile.draw()
+
+#player movement logic. the methods return true if the movement if legal
+def onKeyPress(app, keys):
+    if 'up' in keys:
+        if app.player.moveUp(app):
+            app.map[app.player.row][app.player.col].character = None
+            app.map[app.player.row-1][app.player.col].character = app.player 
+            print(app.map)
+    elif 'down' in keys:
+        if app.player.moveDown(app):
+            app.map[app.player.row][app.player.col].character = None
+            app.map[app.player.row+1][app.player.col].character = app.player  
+    elif 'right' in keys:
+        if app.player.moveRight(app):
+            app.map[app.player.row][app.player.col].character = None
+            app.map[app.player.row][app.player.col + 1].character = app.player  
+    elif 'left' in keys:
+        if app.player.moveLeft(app):
+            app.map[app.player.row][app.player.col].character = None
+            app.map[app.player.row-1][app.player.col - 1].character = app.player  
 
 def main():
     runApp()
