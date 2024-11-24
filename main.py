@@ -50,16 +50,23 @@ def drawTiles(app):
     map = [
         [0,0,0,0,0],
         [0,0,0,0,0],
-        [0,0,0,0,0],
-        [0,0,0,0,0],
+        [0,1,0,0,0],
+        [0,0,0,1,0],
         [0,0,0,0,0]
     ]
     for row in range(app.rows):
         for col in range(app.cols):
-             if map[row][col] == 0:
                 left, top = getCellLeftTop(app, row, col)
                 cellWidth, cellHeight = getCellSize(app)
-                map[row][col] = Tiles(left,top,cellWidth,cellHeight)
+                if map[row][col] == 0:
+                    map[row][col] = Tiles(left,top,cellWidth,cellHeight)
+                elif map[row][col] == 1:
+                    map[row][col] = Tiles(left,top,cellWidth,cellHeight,)
+    
+    for tile in map:
+
+
+
     
     
 
