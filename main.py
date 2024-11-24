@@ -1,5 +1,6 @@
 from cmu_graphics import *
 from Tiles import *
+from Character import *
 
 #draw the board from drawBoard notes
 def onAppStart(app):
@@ -10,6 +11,8 @@ def onAppStart(app):
     app.boardWidth = 300
     app.boardHeight = 300
     app.cellBorderWidth = 2
+    app.map = []
+    makeMap1(app)
 
 def redrawAll(app):
     drawBoard(app)
@@ -45,9 +48,9 @@ def getCellSize(app):
     cellHeight = app.boardHeight / app.rows
     return (cellWidth, cellHeight)
 
-#draw the map the characters actually use(a 2D list)
-def drawTiles(app):
-    map = [
+#draw the map the characters actually use(a 2D list);doesn't show up on screen
+def makeMap1(app):
+    app.map = [
         [0,0,0,0,0],
         [0,0,0,0,0],
         [0,1,0,0,0],
@@ -58,17 +61,16 @@ def drawTiles(app):
         for col in range(app.cols):
                 left, top = getCellLeftTop(app, row, col)
                 cellWidth, cellHeight = getCellSize(app)
-                if map[row][col] == 0:
-                    map[row][col] = Tiles(left,top,cellWidth,cellHeight)
-                elif map[row][col] == 1:
-                    map[row][col] = Tiles(left,top,cellWidth,cellHeight,)
-    
-    for tile in map:
+                if app.map[row][col] == 0:
+                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight)
+                elif app.map[row][col] == 1:
+                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,Enemy('Jimmy',left,top,cellWidth,cellHeight))
+    print(app.map)
 
-
-
-    
-    
+def drawTiles(app):
+    for row in app.map:
+        for tile in row:
+            tile.draw()
 
 def main():
     runApp()
