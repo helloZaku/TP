@@ -125,7 +125,9 @@ def takeStep(app):
         for tile in row:
             if tile.character != None:
                 if isinstance(tile.character,Enemy):
-                    tile.character.patrol(app)
+                    if tile.character.inChase == True:
+                        tile.character.chase(app)
+                    #tile.character.patrol(app)
 
 
 def main():
