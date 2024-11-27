@@ -10,7 +10,7 @@ def drawBoard(app):
 
 def drawBoardBorder(app):
   # draw the board outline (with double-thickness):
-  drawRect(app.boardLeft, app.boardTop, app.boardWidth, app.boardHeight,
+    drawRect(app.boardLeft, app.boardTop, app.boardWidth, app.boardHeight,
            fill=None, border='black',
            borderWidth=2*app.cellBorderWidth)
 
@@ -36,15 +36,15 @@ def getCellSize(app):
 def makeMap1(app):
     app.map = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,2,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,2,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,3,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,3,0,0,0,0],
+        [0,0,1,0,0,0,0,0,0,0,0,0,0,0,0]
     ]
     for row in range(app.rows):
         for col in range(app.cols):
@@ -60,7 +60,7 @@ def makeMap1(app):
                     app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,app.player)
                 elif app.map[row][col] == 3:
                     app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,Enemy('Jimmy',left,top,cellWidth,cellHeight,row,col,
-                                                                                  'striaghtHorizontal'))
+                                                                                  'straightHorizontal'))
 
 
 
@@ -80,6 +80,7 @@ def drawTiles(app):
 
 
 #player movement logic and various commands.
+#known feature: player cannot return to starting position. solution: you do not return to starting position
 def onKeyPress(app, key):
     if 'up' == key:
         app.player.moveUp(app)
@@ -124,7 +125,6 @@ def takeStep(app):
         for tile in row:
             if tile.character != None:
                 if isinstance(tile.character,Enemy):
-                    
                     tile.character.patrol(app)
 
 
