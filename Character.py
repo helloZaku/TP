@@ -10,7 +10,6 @@ class Character:
         self.row = row
         self.col = col
         
-    
     def draw(self):
         drawRect(self.left,self.top,self.width,self.height,fill = 'green')
 
@@ -43,31 +42,37 @@ class Player(Character):
         if self.row != 0:
             tile = app.map[self.row - 1][self.col]
             if tile.Character == None:
+                app.map[self.row][self.col].character = None 
                 self.row -= 1 
                 self.top -= self.height
-                return True
+                app.map[self.row][self.col].character = self
+
                 
     def moveDown(self,app):
         if self.row != len(app.map) - 1:
             tile = app.map[self.row + 1][self.col]
             if tile.Character == None:
+                app.map[self.row][self.col].character = None 
                 self.row += 1 
                 self.top += self.height
-                return True
+                app.map[self.row][self.col].character = self
     
     def moveRight(self,app):
         if self.col != len(app.map[0]) - 1:
             tile = app.map[self.row][self.col + 1]
             if tile.Character == None:
+                app.map[self.row][self.col].character = None 
                 self.col += 1 
                 self.left += self.width
-                return True
+                app.map[self.row][self.col].character = self
+                
 
     def moveLeft(self,app):
         if self.col != 0:
             tile = app.map[self.row][self.col - 1]
             if tile.Character == None:
+                app.map[self.row][self.col].character = None 
                 self.col -= 1 
                 self.left -= self.width
-                return True
+                app.map[self.row][self.col].character = self
 
