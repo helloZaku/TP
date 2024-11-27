@@ -1,6 +1,7 @@
 from cmu_graphics import *
 from Tiles import *
 from Character import *
+from Node import *
 
 #1. make maps
 def drawBoard(app):
@@ -36,15 +37,15 @@ def getCellSize(app):
 def makeMap1(app):
     app.map = [
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,2,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,2,0,3,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,3,0,0,0,0],
-        [0,0,1,0,0,0,0,0,0,0,0,0,0,0,0]
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
     ]
     for row in range(app.rows):
         for col in range(app.cols):
@@ -80,7 +81,7 @@ def drawTiles(app):
 
 
 #player movement logic and various commands.
-#known feature: player cannot return to starting position. solution: you do not return to starting position
+
 def onKeyPress(app, key):
     if 'up' == key:
         app.player.moveUp(app)
@@ -113,6 +114,13 @@ def onAppStart(app):
     app.counter = 0
     app.paused = True
     app.stepsPerSecond = 10
+
+    #player position
+    app.playerRow = 0
+    app.playerCol = 0
+
+    #enemy list
+    app.enemyList = []
 
 def onStep(app):
     if not app.paused: 
