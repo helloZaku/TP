@@ -2,24 +2,7 @@ from cmu_graphics import *
 from Tiles import *
 from Character import *
 
-#draw the board from drawBoard notes
-def onAppStart(app):
-    app.rows = 5
-    app.cols = 5
-    app.boardLeft = 50
-    app.boardTop = 75
-    app.boardWidth = 300
-    app.boardHeight = 300
-    app.cellBorderWidth = 2
-    app.map = []
-    app.player = Player('snake')
-    makeMap1(app)
-
-def redrawAll(app):
-    drawBoard(app)
-    drawBoardBorder(app)
-    drawTiles(app)
-
+#1. make maps
 def drawBoard(app):
     for row in range(app.rows):
         for col in range(app.cols):
@@ -52,11 +35,16 @@ def getCellSize(app):
 #draw the map the characters actually use(a 2D list);doesn't show up on screen
 def makeMap1(app):
     app.map = [
-        [0,0,0,0,0],
-        [0,0,0,0,0],
-        [0,1,0,0,2],
-        [0,0,0,1,0],
-        [0,0,0,0,0]
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,2,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,3,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
     ]
     for row in range(app.rows):
         for col in range(app.cols):
@@ -65,19 +53,33 @@ def makeMap1(app):
                 if app.map[row][col] == 0:
                     app.map[row][col] = Tiles(left,top,cellWidth,cellHeight)
                 elif app.map[row][col] == 1:
-                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,Enemy('Fox',left,top,cellWidth,cellHeight,row,col))
+                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,Enemy('Fox',left,top,cellWidth,cellHeight,row,col,
+                                                                                  'straightVertical'))
                 elif app.map[row][col] == 2:
                     app.player.setLocation(left,top,cellWidth,cellHeight,row,col)
                     app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,app.player)
+                elif app.map[row][col] == 3:
+                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,Enemy('Jimmy',left,top,cellWidth,cellHeight,row,col,
+                                                                                  'striaghtHorizontal'))
 
-    
+
+
+# 2. draw the board from drawBoard notes
+
+
+def redrawAll(app):
+    drawBoard(app)
+    drawBoardBorder(app)
+    drawTiles(app)
 
 def drawTiles(app):
     for row in app.map:
         for tile in row:
             tile.draw()
 
-#player movement logic. the methods return true if the movement if legal
+
+
+#player movement logic and various commands.
 def onKeyPress(app, key):
     if 'up' == key:
         app.player.moveUp(app)
@@ -87,7 +89,44 @@ def onKeyPress(app, key):
         app.player.moveRight(app)  
     elif 'left' == key:
         app.player.moveLeft(app)
+    elif key == 'p':
+        app.paused = not app.paused
+    elif key == 's':
+        takeStep(app)
             
+
+
+# initializing and running the app
+def onAppStart(app):
+    app.rows = 10
+    app.cols = 15
+    app.boardLeft = 50
+    app.boardTop = 75
+    app.boardWidth = 600
+    app.boardHeight = 600
+    app.cellBorderWidth = 2
+    app.map = []
+    app.player = Player('snake')
+    makeMap1(app)
+
+    app.counter = 0
+    app.paused = True
+    app.stepsPerSecond = 10
+
+def onStep(app):
+    if not app.paused: 
+        app.counter += 1
+        takeStep(app)
+
+def takeStep(app):
+    app.counter += 1
+    for row in app.map:
+        for tile in row:
+            if tile.character != None:
+                if isinstance(tile.character,Enemy):
+                    
+                    tile.character.patrol(app)
+
 
 def main():
     runApp()
