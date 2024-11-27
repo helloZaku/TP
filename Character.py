@@ -1,4 +1,7 @@
 from cmu_graphics import *
+from Tiles import *
+from Character import *
+from Node import *
 
 class Character:
     def __init__(self,name,left,top,width,height,row,col):
@@ -22,12 +25,14 @@ class Enemy(Character):
         self.patrolLogic = patrolLogic
         self.dx = 1
         self.dy = 1
+        self.inChase = True
     
     '''def __repr(self):
         return f'{self.name}'''
 
     def draw(self):
         super().draw()
+
 
     #known feature: enemy teleport back to starting position when cannot move forward
     def patrol(self,app):
@@ -58,17 +63,44 @@ class Enemy(Character):
         
     
     #pathfinding
+    
     def chase(self,app):
-        #find player location
-        for row in app.map:
-            for tile in row:
-                if tile.character != None:
-                    if isinstance(tile.character,Player):
-                        playerCurrentRow = tile.character.row
-                        playerCurrentCol = tile.character.col
-
-        #make a 2D list that contain shortest path to player
         
+        maze = [
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ]
+
+               
+        start = (self.row,self.col)
+        end = (app.playerRow, app.playerCol)
+
+        path = astar(maze, start, end)
+        if len(path) > 2:
+            targetRow = path[1][0]
+            targetCol = path[1][1]
+            dRow = targetRow - self.row
+            dCol = targetCol - self.col
+            self.move(app,dRow,dCol)
+    
+    def move(self,app,dRow,dCol):
+        print('here')
+        app.map[self.row][self.col].character = None 
+        self.row += dRow
+        self.top += dRow * self.height
+        self.col += dCol
+        self.left += dCol * self.width
+        app.map[self.row][self.col].character = self
+
+
 
 
 
@@ -89,7 +121,7 @@ class Player(Character):
         self.row = row
         self.col = col
 
-    #movement logic. the methods return true if the movement if legal
+    
     def moveUp(self,app):
         if self.row != 0:
             tile = app.map[self.row - 1][self.col]
@@ -98,6 +130,8 @@ class Player(Character):
                 self.row -= 1 
                 self.top -= self.height
                 app.map[self.row][self.col].character = self
+                app.playerRow = self.row
+                app.playerCol = self.col
 
                 
     def moveDown(self,app):
@@ -108,6 +142,8 @@ class Player(Character):
                 self.row += 1 
                 self.top += self.height
                 app.map[self.row][self.col].character = self
+                app.playerRow = self.row
+                app.playerCol = self.col
     
     def moveRight(self,app):
         if self.col != len(app.map[0]) - 1:
@@ -117,6 +153,8 @@ class Player(Character):
                 self.col += 1 
                 self.left += self.width
                 app.map[self.row][self.col].character = self
+                app.playerRow = self.row
+                app.playerCol = self.col
                 
 
     def moveLeft(self,app):
@@ -127,4 +165,6 @@ class Player(Character):
                 self.col -= 1 
                 self.left -= self.width
                 app.map[self.row][self.col].character = self
+                app.playerRow = self.row
+                app.playerCol = self.col
 
