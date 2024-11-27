@@ -57,6 +57,19 @@ class Enemy(Character):
                 self.dx = -self.dx
         
     
+    #pathfinding
+    def chase(self,app):
+        #find player location
+        for row in app.map:
+            for tile in row:
+                if tile.character != None:
+                    if isinstance(tile.character,Player):
+                        playerCurrentRow = tile.character.row
+                        playerCurrentCol = tile.character.col
+
+        #make a 2D list that contain shortest path to player
+        
+
 
 
 
