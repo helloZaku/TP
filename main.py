@@ -54,7 +54,7 @@ def makeMap1(app):
     app.map = [
         [0,0,0,0,0],
         [0,0,0,0,0],
-        [0,1,0,2,0],
+        [0,1,0,0,2],
         [0,0,0,1,0],
         [0,0,0,0,0]
     ]
@@ -70,30 +70,24 @@ def makeMap1(app):
                     app.player.setLocation(left,top,cellWidth,cellHeight,row,col)
                     app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,app.player)
 
+    
+
 def drawTiles(app):
     for row in app.map:
         for tile in row:
             tile.draw()
 
 #player movement logic. the methods return true if the movement if legal
-def onKeyPress(app, keys):
-    if 'up' in keys:
-        if app.player.moveUp(app):
-            app.map[app.player.row][app.player.col].character = None
-            app.map[app.player.row-1][app.player.col].character = app.player 
-            print(app.map)
-    elif 'down' in keys:
-        if app.player.moveDown(app):
-            app.map[app.player.row][app.player.col].character = None
-            app.map[app.player.row+1][app.player.col].character = app.player  
-    elif 'right' in keys:
-        if app.player.moveRight(app):
-            app.map[app.player.row][app.player.col].character = None
-            app.map[app.player.row][app.player.col + 1].character = app.player  
-    elif 'left' in keys:
-        if app.player.moveLeft(app):
-            app.map[app.player.row][app.player.col].character = None
-            app.map[app.player.row-1][app.player.col - 1].character = app.player  
+def onKeyPress(app, key):
+    if 'up' == key:
+        app.player.moveUp(app)
+    elif 'down' == key:
+        app.player.moveDown(app)
+    elif 'right' == key:
+        app.player.moveRight(app)  
+    elif 'left' == key:
+        app.player.moveLeft(app)
+            
 
 def main():
     runApp()
