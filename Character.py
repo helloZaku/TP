@@ -13,7 +13,38 @@ class Character:
         self.row = row
         self.col = col
         self.orientation = 'up'
-        
+    
+    def createFOV(self,app):
+        #create FOV in the middle and store locations of all FOV as tuples in 2D list so when on movement can clear current FOV
+        for i in range(3):
+            if self.orientation == 'up':
+                if self.row - i != 0:
+                    tile = app.map[self.row - i][self.col]
+                    if tile.object == None and tile.character == None:
+                        app.map[self.row - i][self.col].isInFOV = True
+                        self.currFOV.append((self.row - i,self.col))
+            elif self.orientation == 'down':
+                if self.row + i != len(app.map) - 1:
+                    tile = app.map[self.row - i][self.col]
+                    if tile.object == None and tile.character == None:
+                        app.map[self.row + i][self.col].isInFOV = True
+                        self.currFOV.append((self.row + i,self.col))
+            elif self.orientation == 'right':
+                if self.col + i != len(app.map[0]) - 1:
+                    tile = app.map[self.row][self.col + i]
+                    if tile.object == None and tile.character == None:
+                        app.map[self.row][self.col + i].isInFOV = True
+                        self.currFOV.append((self.row,self.col + i))
+            elif self.orientation == 'left':
+                if self.col - i != 0:
+                    tile = app.map[self.row][self.col - i]
+                    if tile.object == None and tile.character == None:
+                        app.map[self.row][self.col - i].isInFOV = True
+                        self.currFOV.append((self.row,self.col - i))
+    
+    def clearCurrFOV(self,app):
+        for (row,col) in self.currFOV:
+            app.map[row][col].isInFOV = False
 
     #def draw(self):
         #drawPolygon(x, y, x+size, y, x+size/2, topY, fill='black')
@@ -109,29 +140,11 @@ class Enemy(Character):
             #if app.counter % 10 == 0:
             self.move(app,dRow,dCol)
 
-    def createFOV(self,app):
-        #create FOV in the middle
-        for i in range(3):
-            if self.orientation == 'up':
-                if self.row != 0:
-                    tile = app.map[self.row - i][self.col]
-                    if tile.object == None and tile.character == None:
-                        app.map[self.row - i][self.col].isInFOV = True
-            elif self.orientation == 'down':
-                if self.row != len(app.map) - 1:
-                    tile = app.map[self.row - i][self.col]
-                    if tile.object == None and tile.character == None:
-                        app.map[self.row + i][self.col].isInFOV = True
-            elif self.orientation == 'right':
-                if self.col != len(app.map[0]) - 1:
-                    tile = app.map[self.row][self.col + i]
-                    if tile.object == None and tile.character == None:
-                        app.map[self.row][self.col + i].isInFOV = True
-            elif self.orientation == 'left':
-                if self.col != 0:
-                    tile = app.map[self.row][self.col - i]
-                    if tile.object == None and tile.character == None:
-                        app.map[self.row][self.col - i].isInFOV = True
+    def createFOV(self, app):
+        super().createFOV(app)
+    
+    def clearCurrFOV(self, app):
+        super().clearCurrFOV(app)
 
     #have not implemented collision logic for objects and characters
     def move(self,app,dRow,dCol):
@@ -172,38 +185,12 @@ class Player(Character):
         self.height = height
         self.row = row
         self.col = col
-
-    def createFOV(self,app):
-        #create FOV in the middle and store locations of all FOV as tuples in 2D list so when on movement can clear current FOV
-        for i in range(3):
-            if self.orientation == 'up':
-                if self.row - i != 0:
-                    tile = app.map[self.row - i][self.col]
-                    if tile.object == None and tile.character == None:
-                        app.map[self.row - i][self.col].isInFOV = True
-                        self.currFOV.append((self.row - i,self.col))
-            elif self.orientation == 'down':
-                if self.row + i != len(app.map) - 1:
-                    tile = app.map[self.row - i][self.col]
-                    if tile.object == None and tile.character == None:
-                        app.map[self.row + i][self.col].isInFOV = True
-                        self.currFOV.append((self.row + i,self.col))
-            elif self.orientation == 'right':
-                if self.col + i != len(app.map[0]) - 1:
-                    tile = app.map[self.row][self.col + i]
-                    if tile.object == None and tile.character == None:
-                        app.map[self.row][self.col + i].isInFOV = True
-                        self.currFOV.append((self.row,self.col + i))
-            elif self.orientation == 'left':
-                if self.col - i != 0:
-                    tile = app.map[self.row][self.col - i]
-                    if tile.object == None and tile.character == None:
-                        app.map[self.row][self.col - i].isInFOV = True
-                        self.currFOV.append((self.row,self.col - i))
     
-    def clearCurrFOV(self,app):
-        for (row,col) in self.currFOV:
-            app.map[row][col].isInFOV = False
+    def createFOV(self, app):
+        super().createFOV(app)
+    
+    def clearCurrFOV(self, app):
+        super().clearCurrFOV(app)
 
     def moveUp(self,app):
         if self.row != 0:
