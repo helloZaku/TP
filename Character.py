@@ -14,7 +14,7 @@ class Character:
         self.col = col
         
     def draw(self):
-        drawRect(self.left,self.top,self.width,self.height,fill = 'green')
+        drawRect(self.left,self.top,self.width,self.height,fill = 'red')
 
 
 
