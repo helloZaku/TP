@@ -12,9 +12,13 @@ class Character:
         self.height = height
         self.row = row
         self.col = col
+        self.orientation = 'up'
         
-    def draw(self):
-        drawRect(self.left,self.top,self.width,self.height,fill = 'red')
+
+    #def draw(self):
+        #drawPolygon(x, y, x+size, y, x+size/2, topY, fill='black')
+        #drawRect(self.left,self.top,self.width,self.height,fill = 'red')
+        #
 
 
 
@@ -26,12 +30,25 @@ class Enemy(Character):
         self.dx = 1
         self.dy = 1
         self.inChase = True
-    
+        self.inPatrol = False
+        self.inInvestigate = False
+        self.speed = 10
+        
+
     '''def __repr(self):
         return f'{self.name}'''
 
-    def draw(self):
-        super().draw()
+    def draw(self,app):
+        '''if self.orientation == 'up':
+            drawImage(app.enemyPicUp,self.left,self.top,width=self.width, height=self.height)
+        elif self.orientation == 'down':
+            drawImage(app.enemyPicDown,self.left,self.top,width=self.width, height=self.height)
+        elif self.orientation == 'right':
+            drawImage(app.enemyPicRight,self.left,self.top,width=self.width, height=self.height)
+        elif self.orientation == 'left':
+            drawImage(app.enemyPicLeft,self.left,self.top,width=self.width, height=self.height)'''
+        drawRect(self.left,self.top,self.width,self.height,fill = 'red')
+        #self.createFOV(app)
 
 
     #known feature: enemy teleport back to starting position when cannot move forward
@@ -60,8 +77,6 @@ class Enemy(Character):
                 app.map[self.row][self.col].character = self
             else:
                 self.dx = -self.dx
-        
-    
     #pathfinding
     
     def chase(self,app):
@@ -89,10 +104,47 @@ class Enemy(Character):
             targetCol = path[1][1]
             dRow = targetRow - self.row
             dCol = targetCol - self.col
+
+            #speed
+            #if app.counter % 10 == 0:
             self.move(app,dRow,dCol)
-    
+
+    def createFOV(self,app):
+        #create FOV in the middle
+        for i in range(3):
+            if self.orientation == 'up':
+                if self.row != 0:
+                    tile = app.map[self.row - i][self.col]
+                    if tile.object == None and tile.character == None:
+                        app.map[self.row - i][self.col].isInFOV = True
+            elif self.orientation == 'down':
+                if self.row != len(app.map) - 1:
+                    tile = app.map[self.row - i][self.col]
+                    if tile.object == None and tile.character == None:
+                        app.map[self.row + i][self.col].isInFOV = True
+            elif self.orientation == 'right':
+                if self.col != len(app.map[0]) - 1:
+                    tile = app.map[self.row][self.col + i]
+                    if tile.object == None and tile.character == None:
+                        app.map[self.row][self.col + i].isInFOV = True
+            elif self.orientation == 'left':
+                if self.col != 0:
+                    tile = app.map[self.row][self.col - i]
+                    if tile.object == None and tile.character == None:
+                        app.map[self.row][self.col - i].isInFOV = True
+
+    #have not implemented collision logic for objects and characters
     def move(self,app,dRow,dCol):
-        print('here')
+        
+        if dRow > 0:
+            self.orientation = 'up'
+        elif dRow < 0:
+            self.orientation = 'down'
+        elif dCol > 0:
+            self.orientation = 'right'
+        elif dRow > 0:
+            self.orientation = 'left'
+
         app.map[self.row][self.col].character = None 
         self.row += dRow
         self.top += dRow * self.height
@@ -102,15 +154,13 @@ class Enemy(Character):
 
 
 
-
-
-
 class Player(Character):
     def __init__(self,name,left=0,top=0,width=0,height=0,row=0,col=0):
         super().__init__(name,left,top,width,height,row,col)
         self.HP = 100
+        self.speed = 10
     
-    def draw(self):
+    def draw(self,app):
         drawRect(self.left,self.top,self.width,self.height,fill = 'blue')
     
     def setLocation(self,left,top,width,height,row,col):
@@ -125,7 +175,7 @@ class Player(Character):
     def moveUp(self,app):
         if self.row != 0:
             tile = app.map[self.row - 1][self.col]
-            if tile.character == None:
+            if tile.character == None and tile.object == None:
                 app.map[self.row][self.col].character = None 
                 self.row -= 1 
                 self.top -= self.height
@@ -137,7 +187,7 @@ class Player(Character):
     def moveDown(self,app):
         if self.row != len(app.map) - 1:
             tile = app.map[self.row + 1][self.col]
-            if tile.character == None:
+            if tile.character == None and tile.object == None:
                 app.map[self.row][self.col].character = None 
                 self.row += 1 
                 self.top += self.height
@@ -148,7 +198,7 @@ class Player(Character):
     def moveRight(self,app):
         if self.col != len(app.map[0]) - 1:
             tile = app.map[self.row][self.col + 1]
-            if tile.character == None:
+            if tile.character == None and tile.object == None:
                 app.map[self.row][self.col].character = None 
                 self.col += 1 
                 self.left += self.width
@@ -160,7 +210,7 @@ class Player(Character):
     def moveLeft(self,app):
         if self.col != 0:
             tile = app.map[self.row][self.col - 1]
-            if tile.character == None:
+            if tile.character == None and tile.object == None:
                 app.map[self.row][self.col].character = None 
                 self.col -= 1 
                 self.left -= self.width
