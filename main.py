@@ -28,7 +28,7 @@ def onAppStart(app):
 
     app.counter = 0
     app.paused = True
-    app.stepsPerSecond = 10
+    
 
     #player position
     app.playerRow = 0
