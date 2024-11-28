@@ -48,7 +48,7 @@ class Enemy(Character):
         elif self.orientation == 'left':
             drawImage(app.enemyPicLeft,self.left,self.top,width=self.width, height=self.height)'''
         drawRect(self.left,self.top,self.width,self.height,fill = 'red')
-        #self.createFOV(app)
+        self.createFOV(app)
 
 
     #known feature: enemy teleport back to starting position when cannot move forward
@@ -159,9 +159,11 @@ class Player(Character):
         super().__init__(name,left,top,width,height,row,col)
         self.HP = 100
         self.speed = 10
+        self.currFOV = []
     
     def draw(self,app):
         drawRect(self.left,self.top,self.width,self.height,fill = 'blue')
+        self.createFOV(app)
     
     def setLocation(self,left,top,width,height,row,col):
         self.left = left
@@ -171,50 +173,89 @@ class Player(Character):
         self.row = row
         self.col = col
 
+    def createFOV(self,app):
+        #create FOV in the middle and store locations of all FOV as tuples in 2D list so when on movement can clear current FOV
+        for i in range(3):
+            if self.orientation == 'up':
+                if self.row - i != 0:
+                    tile = app.map[self.row - i][self.col]
+                    if tile.object == None and tile.character == None:
+                        app.map[self.row - i][self.col].isInFOV = True
+                        self.currFOV.append((self.row - i,self.col))
+            elif self.orientation == 'down':
+                if self.row + i != len(app.map) - 1:
+                    tile = app.map[self.row - i][self.col]
+                    if tile.object == None and tile.character == None:
+                        app.map[self.row + i][self.col].isInFOV = True
+                        self.currFOV.append((self.row + i,self.col))
+            elif self.orientation == 'right':
+                if self.col + i != len(app.map[0]) - 1:
+                    tile = app.map[self.row][self.col + i]
+                    if tile.object == None and tile.character == None:
+                        app.map[self.row][self.col + i].isInFOV = True
+                        self.currFOV.append((self.row,self.col + i))
+            elif self.orientation == 'left':
+                if self.col - i != 0:
+                    tile = app.map[self.row][self.col - i]
+                    if tile.object == None and tile.character == None:
+                        app.map[self.row][self.col - i].isInFOV = True
+                        self.currFOV.append((self.row,self.col - i))
     
+    def clearCurrFOV(self,app):
+        for (row,col) in self.currFOV:
+            app.map[row][col].isInFOV = False
+
     def moveUp(self,app):
         if self.row != 0:
             tile = app.map[self.row - 1][self.col]
             if tile.character == None and tile.object == None:
+                self.orientation = 'up'
                 app.map[self.row][self.col].character = None 
                 self.row -= 1 
                 self.top -= self.height
                 app.map[self.row][self.col].character = self
                 app.playerRow = self.row
                 app.playerCol = self.col
+                self.clearCurrFOV(app)
 
                 
     def moveDown(self,app):
         if self.row != len(app.map) - 1:
             tile = app.map[self.row + 1][self.col]
             if tile.character == None and tile.object == None:
+                self.orientation = 'down'
                 app.map[self.row][self.col].character = None 
                 self.row += 1 
                 self.top += self.height
                 app.map[self.row][self.col].character = self
                 app.playerRow = self.row
                 app.playerCol = self.col
+                self.clearCurrFOV(app)
     
     def moveRight(self,app):
         if self.col != len(app.map[0]) - 1:
             tile = app.map[self.row][self.col + 1]
             if tile.character == None and tile.object == None:
+                self.orientation = 'right'
                 app.map[self.row][self.col].character = None 
                 self.col += 1 
                 self.left += self.width
                 app.map[self.row][self.col].character = self
                 app.playerRow = self.row
                 app.playerCol = self.col
+                self.clearCurrFOV(app)
                 
 
     def moveLeft(self,app):
         if self.col != 0:
             tile = app.map[self.row][self.col - 1]
             if tile.character == None and tile.object == None:
+                self.orientation = 'left'
                 app.map[self.row][self.col].character = None 
                 self.col -= 1 
                 self.left -= self.width
                 app.map[self.row][self.col].character = self
                 app.playerRow = self.row
                 app.playerCol = self.col
+                self.clearCurrFOV(app)
 
