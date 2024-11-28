@@ -2,103 +2,18 @@ from cmu_graphics import *
 from Tiles import *
 from Character import *
 from Node import *
+from Object import *
+from Maps import *
 
-#1. make maps
-def drawBoard(app):
-    for row in range(app.rows):
-        for col in range(app.cols):
-            drawCell(app, row, col)
+#from Krosbie
+from urllib.request import urlopen
+from PIL import Image
+def loadImage(url):
+    pilImage = Image.open(urlopen(url))
+    cmuImage = CMUImage(pilImage)
+    return cmuImage
 
-def drawBoardBorder(app):
-  # draw the board outline (with double-thickness):
-    drawRect(app.boardLeft, app.boardTop, app.boardWidth, app.boardHeight,
-           fill=None, border='black',
-           borderWidth=2*app.cellBorderWidth)
-
-def drawCell(app, row, col):
-    cellLeft, cellTop = getCellLeftTop(app, row, col)
-    cellWidth, cellHeight = getCellSize(app)
-    drawRect(cellLeft, cellTop, cellWidth, cellHeight,
-             fill=None, border='black',
-             borderWidth=app.cellBorderWidth)
-
-def getCellLeftTop(app, row, col):
-    cellWidth, cellHeight = getCellSize(app)
-    cellLeft = app.boardLeft + col * cellWidth
-    cellTop = app.boardTop + row * cellHeight
-    return (cellLeft, cellTop)
-
-def getCellSize(app):
-    cellWidth = app.boardWidth / app.cols
-    cellHeight = app.boardHeight / app.rows
-    return (cellWidth, cellHeight)
-
-#draw the map the characters actually use(a 2D list);doesn't show up on screen
-def makeMap1(app):
-    app.map = [
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,2,0,3,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-    ]
-    for row in range(app.rows):
-        for col in range(app.cols):
-                left, top = getCellLeftTop(app, row, col)
-                cellWidth, cellHeight = getCellSize(app)
-                if app.map[row][col] == 0:
-                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight)
-                elif app.map[row][col] == 1:
-                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,Enemy('Fox',left,top,cellWidth,cellHeight,row,col,
-                                                                                  'straightVertical'))
-                elif app.map[row][col] == 2:
-                    app.player.setLocation(left,top,cellWidth,cellHeight,row,col)
-                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,app.player)
-                elif app.map[row][col] == 3:
-                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,Enemy('Jimmy',left,top,cellWidth,cellHeight,row,col,
-                                                                                  'straightHorizontal'))
-
-
-
-# 2. draw the board from drawBoard notes
-
-
-def redrawAll(app):
-    drawBoard(app)
-    drawBoardBorder(app)
-    drawTiles(app)
-
-def drawTiles(app):
-    for row in app.map:
-        for tile in row:
-            tile.draw()
-
-
-
-#player movement logic and various commands.
-
-def onKeyPress(app, key):
-    if 'up' == key:
-        app.player.moveUp(app)
-    elif 'down' == key:
-        app.player.moveDown(app)
-    elif 'right' == key:
-        app.player.moveRight(app)  
-    elif 'left' == key:
-        app.player.moveLeft(app)
-    elif key == 'p':
-        app.paused = not app.paused
-    elif key == 's':
-        takeStep(app)
-            
-
-
-# initializing and running the app
+#appStart
 def onAppStart(app):
     app.rows = 10
     app.cols = 15
@@ -122,13 +37,54 @@ def onAppStart(app):
     #enemy list
     app.enemyList = []
 
+    #pictures
+    '''app.enemyPicUp = loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Red_Triangle.svg/516px-Red_Triangle.svg.png?20100215063256')
+    app.enemyPicLeft = loadImage('https://upload.wikimedia.org/wikipedia/commons/f/f1/Long_red_right-pointing_triangle.svg')
+    app.enemyPicDown = loadImage('https://www.emoji.co.uk/files/microsoft-emojis/symbols-windows10/10303-up-pointing-red-triangle.png')
+    app.enemyPicRight = loadImage('https://commons.wikimedia.org/wiki/File:TriangleArrow-Left-red.png')'''
+
+
+def redrawAll(app):
+    drawBoard(app)
+    drawBoardBorder(app)
+    drawTiles(app)
+
+def drawTiles(app):
+    for row in app.map:
+        for tile in row:
+            tile.draw(app)
+
+
+
+#player movement logic and various commands.
+
+def onKeyPress(app, key):
+    if key == 'p':
+        app.paused = not app.paused
+    elif key == 's':
+        takeStep(app)
+            
+def onKeyHold(app,keys):
+    if app.counter % 5 == 0:
+        if 'up' in keys:
+                app.player.moveUp(app)
+        elif 'down' in keys:
+            app.player.moveDown(app)
+        elif 'right' in keys:
+            app.player.moveRight(app)  
+        elif 'left' in keys:
+            app.player.moveLeft(app)
+
+# initializing and running the app
+
+
 def onStep(app):
     if not app.paused: 
-        app.counter += 1
         takeStep(app)
 
 def takeStep(app):
     app.counter += 1
+    print(app.counter)
     for row in app.map:
         for tile in row:
             if tile.character != None:
@@ -139,6 +95,7 @@ def takeStep(app):
 
 
 def main():
+
     runApp()
 
 main()
