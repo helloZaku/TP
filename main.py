@@ -25,6 +25,7 @@ def onAppStart(app):
     app.map = []
     app.player = Player('snake')
     makeMap1(app)
+    app.stepPerSecond = 5
 
     app.counter = 0
     app.paused = True
