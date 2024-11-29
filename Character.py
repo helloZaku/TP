@@ -2,6 +2,7 @@ from cmu_graphics import *
 from Tiles import *
 from Character import *
 from Node import *
+import time
 
 class Character:
     def __init__(self,name,left,top,width,height,row,col):
@@ -19,14 +20,14 @@ class Character:
         #create FOV in the middle and store locations of all FOV as tuples in 2D list so when on movement can clear current FOV
         for i in range(3):
             if self.orientation == 'up':
-                if self.row - i != 0:
+                if self.row - i >= 0:
                     tile = app.map[self.row - i][self.col]
                     if tile.object == None and tile.character == None:
                         app.map[self.row - i][self.col].isInFOV = True
                         self.currFOV.append((self.row - i,self.col))
             elif self.orientation == 'down':
                 if self.row + i != len(app.map) - 1:
-                    tile = app.map[self.row - i][self.col]
+                    tile = app.map[self.row + i][self.col]
                     if tile.object == None and tile.character == None:
                         app.map[self.row + i][self.col].isInFOV = True
                         self.currFOV.append((self.row + i,self.col))
@@ -68,6 +69,7 @@ class Enemy(Character):
         self.inInvestigate = False
         self.speed = 10
         self.alertMeter = 0
+        self.susCounter = 0
         
 
     '''def __repr(self):
@@ -88,6 +90,25 @@ class Enemy(Character):
         #because this function is called on step in redrawall, use it to check if player is in fov
         self.checkFOV(app)
 
+
+    #investigate. is sus counter is 0, just look around before resume normal. if more than 1, start searching
+    def investigate(self,app,susTile):
+        self.moveToLocation((self.row,self.col),susTile)
+        orientations = ['up','right','down','left']
+        if self.susCounter == 0:
+            if app.counter % 5 == 0:
+                self.orientation = 'up'
+                startTime = time.time()
+                currTime = time.time()
+
+            elif app.counter % 10 == 0:
+                self.orientation = 'up'
+            elif app.counter % 15 == 0:
+                self.orientation = 'up'
+            elif app.counter % 20 == 0:
+                self.orientation = 'up'
+            
+        
 
     #known feature: enemy teleport back to starting position when cannot move forward
     def patrol(self,app):
@@ -136,6 +157,9 @@ class Enemy(Character):
         start = (self.row,self.col)
         end = (app.playerRow, app.playerCol)
 
+        self.moveToLocation(maze,start,end)
+
+    def moveToLocation(maze,start,end):
         path = astar(maze, start, end)
         if len(path) > 2:
             targetRow = path[1][0]
@@ -188,22 +212,23 @@ class Enemy(Character):
 
     #have not implemented collision logic for objects and characters
     def move(self,app,dRow,dCol):
-        
-        if dRow > 0:
-            self.orientation = 'up'
-        elif dRow < 0:
-            self.orientation = 'down'
-        elif dCol > 0:
-            self.orientation = 'right'
-        elif dRow > 0:
-            self.orientation = 'left'
+        if app.counter % 10 == 0:
+            if dRow > 0:
+                self.orientation = 'down'
+            elif dRow < 0:
+                self.orientation = 'up'
+            elif dCol > 0:
+                self.orientation = 'right'
+            elif dCol < 0:
+                self.orientation = 'left'
 
-        app.map[self.row][self.col].character = None 
-        self.row += dRow
-        self.top += dRow * self.height
-        self.col += dCol
-        self.left += dCol * self.width
-        app.map[self.row][self.col].character = self
+            app.map[self.row][self.col].character = None 
+            self.row += dRow
+            self.top += dRow * self.height
+            self.col += dCol
+            self.left += dCol * self.width
+            app.map[self.row][self.col].character = self
+            self.clearCurrFOV(app)
 
 
 
@@ -216,7 +241,7 @@ class Player(Character):
     
     def draw(self,app):
         drawRect(self.left,self.top,self.width,self.height,fill = 'blue')
-        self.createFOV(app)
+        
     
     def setLocation(self,left,top,width,height,row,col):
         self.left = left
