@@ -3,6 +3,7 @@ from Tiles import *
 from Character import *
 from Node import *
 import time
+from MyNode import *
 
 class Character:
     def __init__(self,name,left,top,width,height,row,col):
@@ -26,19 +27,19 @@ class Character:
                         app.map[self.row - i][self.col].isInFOV = True
                         self.currFOV.append((self.row - i,self.col))
             elif self.orientation == 'down':
-                if self.row + i != len(app.map) - 1:
+                if self.row + i <= len(app.map) - 1:
                     tile = app.map[self.row + i][self.col]
                     if tile.object == None and tile.character == None:
                         app.map[self.row + i][self.col].isInFOV = True
                         self.currFOV.append((self.row + i,self.col))
             elif self.orientation == 'right':
-                if self.col + i != len(app.map[0]) - 1:
+                if self.col + i <= len(app.map[0]) - 1:
                     tile = app.map[self.row][self.col + i]
                     if tile.object == None and tile.character == None:
                         app.map[self.row][self.col + i].isInFOV = True
                         self.currFOV.append((self.row,self.col + i))
             elif self.orientation == 'left':
-                if self.col - i != 0:
+                if self.col - i >= 0:
                     tile = app.map[self.row][self.col - i]
                     if tile.object == None and tile.character == None:
                         app.map[self.row][self.col - i].isInFOV = True
@@ -72,8 +73,11 @@ class Enemy(Character):
         self.susCounter = 0
         
 
-    '''def __repr(self):
-        return f'{self.name}'''
+    def __repr(self):
+        return f'{self.name}'
+    
+    def __hash__(self):
+        return hash(str(self))
 
     def draw(self,app):
         '''if self.orientation == 'up':
@@ -139,36 +143,37 @@ class Enemy(Character):
     #pathfinding
     
     def chase(self,app):
+        if app.counter % 10 == 0:
+            maze = [
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+            ]
+
+                
+            start = (self.row,self.col)
+            end = (app.playerRow, app.playerCol)
+
+            self.moveToLocation(maze,start,end)
+
+    def moveToLocation(self,maze,start,end):
+        path = findShortestPath(app,maze, start, end)
         
-        maze = [
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        ]
-
-               
-        start = (self.row,self.col)
-        end = (app.playerRow, app.playerCol)
-
-        self.moveToLocation(maze,start,end)
-
-    def moveToLocation(maze,start,end):
-        path = astar(maze, start, end)
         if len(path) > 2:
             targetRow = path[1][0]
             targetCol = path[1][1]
             dRow = targetRow - self.row
             dCol = targetCol - self.col
+            
 
-            #speed
-            #if app.counter % 10 == 0:
+            
             self.move(app,dRow,dCol)
 
     #FOV related stuff
@@ -179,7 +184,7 @@ class Enemy(Character):
         super().clearCurrFOV(app)
     
     def checkFOV(self,app):
-        print(self.alertMeter)
+        
         if (app.playerRow, app.playerCol) in self.currFOV:
             self.alertMeter += 1
         else:
@@ -212,23 +217,25 @@ class Enemy(Character):
 
     #have not implemented collision logic for objects and characters
     def move(self,app,dRow,dCol):
-        if app.counter % 10 == 0:
-            if dRow > 0:
-                self.orientation = 'down'
-            elif dRow < 0:
-                self.orientation = 'up'
-            elif dCol > 0:
-                self.orientation = 'right'
-            elif dCol < 0:
-                self.orientation = 'left'
-
-            app.map[self.row][self.col].character = None 
-            self.row += dRow
-            self.top += dRow * self.height
-            self.col += dCol
-            self.left += dCol * self.width
-            app.map[self.row][self.col].character = self
-            self.clearCurrFOV(app)
+        #if app.counter % 10 == 0:
+        if dRow > 0:
+            self.orientation = 'down'
+        elif dRow < 0:
+            self.orientation = 'up'
+        elif dCol > 0:
+            self.orientation = 'right'
+        elif dCol < 0:
+            self.orientation = 'left'
+        
+        app.map[self.row][self.col].character = None 
+        self.row += dRow
+        self.top += dRow * self.height
+        self.col += dCol
+        self.left += dCol * self.width
+        app.map[self.row][self.col].character = self
+        self.clearCurrFOV(app)
+    
+    
 
 
 
@@ -251,12 +258,6 @@ class Player(Character):
         self.row = row
         self.col = col
     
-    def createFOV(self, app):
-        super().createFOV(app)
-    
-    def clearCurrFOV(self, app):
-        super().clearCurrFOV(app)
-
     def moveUp(self,app):
         if self.row != 0:
             tile = app.map[self.row - 1][self.col]
