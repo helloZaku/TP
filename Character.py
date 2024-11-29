@@ -13,6 +13,7 @@ class Character:
         self.row = row
         self.col = col
         self.orientation = 'up'
+        self.currFOV = []
     
     def createFOV(self,app):
         #create FOV in the middle and store locations of all FOV as tuples in 2D list so when on movement can clear current FOV
@@ -45,6 +46,8 @@ class Character:
     def clearCurrFOV(self,app):
         for (row,col) in self.currFOV:
             app.map[row][col].isInFOV = False
+    
+    
 
     #def draw(self):
         #drawPolygon(x, y, x+size, y, x+size/2, topY, fill='black')
@@ -60,10 +63,11 @@ class Enemy(Character):
         self.patrolLogic = patrolLogic
         self.dx = 1
         self.dy = 1
-        self.inChase = True
+        self.inChase = False
         self.inPatrol = False
         self.inInvestigate = False
         self.speed = 10
+        self.alertMeter = 0
         
 
     '''def __repr(self):
@@ -80,6 +84,9 @@ class Enemy(Character):
             drawImage(app.enemyPicLeft,self.left,self.top,width=self.width, height=self.height)'''
         drawRect(self.left,self.top,self.width,self.height,fill = 'red')
         self.createFOV(app)
+        
+        #because this function is called on step in redrawall, use it to check if player is in fov
+        self.checkFOV(app)
 
 
     #known feature: enemy teleport back to starting position when cannot move forward
@@ -140,11 +147,44 @@ class Enemy(Character):
             #if app.counter % 10 == 0:
             self.move(app,dRow,dCol)
 
+    #FOV related stuff
     def createFOV(self, app):
         super().createFOV(app)
     
     def clearCurrFOV(self, app):
         super().clearCurrFOV(app)
+    
+    def checkFOV(self,app):
+        print(self.alertMeter)
+        if (app.playerRow, app.playerCol) in self.currFOV:
+            self.alertMeter += 1
+        else:
+            self.alertMeter -= 1
+            if self.alertMeter < 0:
+                self.alertMeter = 0
+
+        #top cap of alertmeter
+        if self.alertMeter > 300:
+            self.alertMeter = 299
+
+        #if player is detected start chase and chase will last while
+        if self.alertMeter >= 50:
+            self.alertMeter = 200
+            self.inInvestigate = False
+            self.inPatrol = False
+            self.inChase = True
+
+        #player out of FOV, start investigating
+        if self.alertMeter < 100:
+            self.inInvestigate = True
+            self.inPatrol = False
+            self.inChase = False
+
+        #must have been the wind
+        if self.alertMeter == 0:
+            self.inInvestigate = False
+            self.inPatrol = True
+            self.inChase = False
 
     #have not implemented collision logic for objects and characters
     def move(self,app,dRow,dCol):
@@ -172,7 +212,7 @@ class Player(Character):
         super().__init__(name,left,top,width,height,row,col)
         self.HP = 100
         self.speed = 10
-        self.currFOV = []
+        
     
     def draw(self,app):
         drawRect(self.left,self.top,self.width,self.height,fill = 'blue')
