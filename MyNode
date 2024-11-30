@@ -4,40 +4,26 @@
 #squad leader uses a*, other enemies use this
 
 def findShortestPath(maze,startLocation,targetLocation,path,visited):
-    print(f"Currently at: {startLocation}, Target: {targetLocation}, Path: {path}")
+    print(f"Currently at: {startLocation}, Target: {targetLocation}, Path: {path},visited:{visited}")
     
     if isRightNextToEachOther(startLocation,targetLocation):
         path.append(targetLocation)       
         return path
     else:
+        visited.add(startLocation)
         #create neighbors
         neighbors = [(startLocation[0] + 1,startLocation[1]),(startLocation[0] - 1,startLocation[1]),
                      (startLocation[0],startLocation[1] + 1),(startLocation[0],startLocation[1] - 1)]
         
         #check boundaries and collision and if visited
 
-        neighbors = [(row,col) for (row,col) in neighbors if row >= 0 or row <= len(maze) - 1 or col >= 0 or col <= len(maze[0]) -1 or maze[row][col] != 1]
+        neighbors = [(row,col) for (row,col) in neighbors if row >= 0 and row <= len(maze) - 1 and col >= 0 and col <= len(maze[0]) -1 and maze[row][col] != 1]
         
         neighbors = [(row,col) for (row,col) in neighbors if (row,col) not in visited]
 
-        '''for row,col in neighbors:
-            if row < 0 or row > len(maze) - 1 or col < 0 or col > len(maze) -1:
-                neighbors.remove((row,col))
-            else:
-                tile = app.map[row][col]
-                if tile.character != None or tile.object != None:
-                    neighbors.remove((row,col))
-
-        #check if neighbor already in path
-        for tile in neighbors:
-            if tile in path:
-                neighbors.remove(tile)
-
-        #check if neighbor is visited
-        for tile in neighbors:
-            if tile in visited:
-                neighbors.remove(tile)'''
-
+        if len(neighbors) == 0:
+            return None 
+        
 
         sortedNeighbors = sortByClosestToFurthest(neighbors,targetLocation)
         print(f"sortedNeighbors: {sortedNeighbors}")
