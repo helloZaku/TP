@@ -3,9 +3,11 @@
 #talked to Austin and he said i should try to find shortcuts in the paths to optimize it
 #squad leader uses a*, other enemies use this
 
-def findShortestPath(app,maze,startLocation,targetLocation,path = []):
+def findShortestPath(maze,startLocation,targetLocation,path = [],visited = set()):
+    print(f"Currently at: {startLocation}, Target: {targetLocation}, Path: {path}")
     if path == []:
         path.append(startLocation)
+        visited.add(startLocation)
 
     if isRightNextToEachOther(startLocation,targetLocation):
         path.append(targetLocation)       
@@ -15,8 +17,13 @@ def findShortestPath(app,maze,startLocation,targetLocation,path = []):
         neighbors = [(startLocation[0] + 1,startLocation[1]),(startLocation[0] - 1,startLocation[1]),
                      (startLocation[0],startLocation[1] + 1),(startLocation[0],startLocation[1] - 1)]
         
-        #check boundaries and collision
-        for row,col in neighbors:
+        #check boundaries and collision and if visited
+
+        neighbors = [(row,col) for (row,col) in neighbors if row >= 0 or row <= len(maze) - 1 or col >= 0 or col <= len(maze[0]) -1 or maze[row][col] != 1]
+        
+        neighbors = [(row,col) for (row,col) in neighbors if (row,col) not in visited]
+
+        '''for row,col in neighbors:
             if row < 0 or row > len(maze) - 1 or col < 0 or col > len(maze) -1:
                 neighbors.remove((row,col))
             else:
@@ -29,17 +36,23 @@ def findShortestPath(app,maze,startLocation,targetLocation,path = []):
             if tile in path:
                 neighbors.remove(tile)
 
-        sortedNeighbors = sortByClosestToFurthest(neighbors,targetLocation)
+        #check if neighbor is visited
+        for tile in neighbors:
+            if tile in visited:
+                neighbors.remove(tile)'''
 
+
+        sortedNeighbors = sortByClosestToFurthest(neighbors,targetLocation)
+        print(f"sortedNeighbors: {sortedNeighbors}")
         #tile is a tuple of the row and col of the tile
         for tile in sortedNeighbors:
-            if isLegalMove(maze,tile):
-                path.append(tile)
-                solution = findShortestPath(app,maze,tile,targetLocation,path)
-                if solution != None:
-                    return solution
-                else:
-                    path.pop()
+            #if isLegalMove(maze,tile):
+            path.append(tile)
+            solution = findShortestPath(maze,tile,targetLocation,path[:])
+            if solution != None:
+                return solution
+            else:
+                path.pop()
         return None
 
 def sortByClosestToFurthest(neighbors,targetLocation):
@@ -57,7 +70,7 @@ def sortByClosestToFurthest(neighbors,targetLocation):
     
 def isLegalMove(maze,targetTile):
     row,col = targetTile
-    if maze[row][col] == 1:
+    if row < 0 or row > len(maze) - 1 or col < 0 or col > len(maze[0]) - 1 or maze[row][col] == 1:
         return False
     else:
         return True
