@@ -47,70 +47,11 @@ class Character:
                         self.currFOV.append((self.row,self.col - i))
             
             #the 2 lines at the side
-            '''for i in range(5):
-                if self.orientation == 'up':
-                    if self.row - i >= 0:
-                        tile = app.map[self.row - i][self.col]
-                        if tile.object == None and tile.character == None:
-                            app.map[self.row - i][self.col].isInFOV = True
-                            self.currFOV.append((self.row - i,self.col))
-                elif self.orientation == 'down':
-                    if self.row + i <= len(app.map) - 1:
-                        tile = app.map[self.row + i][self.col]
-                        if tile.object == None and tile.character == None:
-                            app.map[self.row + i][self.col].isInFOV = True
-                            self.currFOV.append((self.row + i,self.col))
-                elif self.orientation == 'right':
-                    if self.col + i <= len(app.map[0]) - 1:
-                        tile = app.map[self.row][self.col + i]
-                        if tile.object == None and tile.character == None:
-                            app.map[self.row][self.col + i].isInFOV = True
-                            self.currFOV.append((self.row,self.col + i))
-                elif self.orientation == 'left':
-                    if self.col - i >= 0:
-                        tile = app.map[self.row][self.col - i]
-                        if tile.object == None and tile.character == None:
-                            app.map[self.row][self.col - i].isInFOV = True
-                            self.currFOV.append((self.row,self.col - i))'''
             
-            #first 
-            '''for i in range(3):
-                for j in range(5)
-            if self.orientation == 'up':
-                if self.row - i >= 0:
-                    tile = app.map[self.row - i][self.col]
-                    if tile.object == None and tile.character == None:
-                        app.map[self.row - i][self.col].isInFOV = True
-                        self.currFOV.append((self.row - i,self.col))
-            elif self.orientation == 'down':
-                if self.row + i <= len(app.map) - 1:
-                    tile = app.map[self.row + i][self.col]
-                    if tile.object == None and tile.character == None:
-                        app.map[self.row + i][self.col].isInFOV = True
-                        self.currFOV.append((self.row + i,self.col))
-            elif self.orientation == 'right':
-                if self.col + i <= len(app.map[0]) - 1:
-                    tile = app.map[self.row][self.col + i]
-                    if tile.object == None and tile.character == None:
-                        app.map[self.row][self.col + i].isInFOV = True
-                        self.currFOV.append((self.row,self.col + i))
-            elif self.orientation == 'left':
-                if self.col - i >= 0:
-                    tile = app.map[self.row][self.col - i]
-                    if tile.object == None and tile.character == None:
-                        app.map[self.row][self.col - i].isInFOV = True
-                        self.currFOV.append((self.row,self.col - i))'''
-    
     def clearCurrFOV(self,app):
         for (row,col) in self.currFOV:
             app.map[row][col].isInFOV = False
-    
-    
 
-    #def draw(self):
-        #drawPolygon(x, y, x+size, y, x+size/2, topY, fill='black')
-        #drawRect(self.left,self.top,self.width,self.height,fill = 'red')
-        #
 
 
 
@@ -149,8 +90,8 @@ class Enemy(Character):
         if self.HP > 0:
             drawRect(self.left,self.top,self.width,self.height,fill = 'red')
             self.createFOV(app)
-            self.checkFOV(app)
             self.createHearingRadius(app)
+            self.checkFOV(app)
             self.checkHearing(app)
         elif self.HP == 0:
             self.clearCurrFOV(app)
@@ -193,7 +134,9 @@ class Enemy(Character):
                     self.currHearing.append((targetRow,targetCol)) 
 
     def checkHearing(self,app):
-        pass
+        if app.player.isCrouched == False and app.player.isLoud == True and (app.playerRow, app.playerCol) in self.currHearing:
+            susTile = (app.playerRow, app.playerCol)
+            self.investigate(app,susTile)
 
     def clearHearing(self,app):
         for row,col in self.currHearing:
@@ -243,21 +186,25 @@ class Enemy(Character):
         self.moveToLocation((self.row,self.col),susTile)
         orientations = ['up','right','down','left']
         if self.susCounter == 0:
-            if app.counter % 5 == 0:
-                self.orientation = 'up'
-                startTime = time.time()
-                currTime = time.time()
-
-            elif app.counter % 10 == 0:
-                self.orientation = 'up'
-            elif app.counter % 15 == 0:
-                self.orientation = 'up'
-            elif app.counter % 20 == 0:
-                self.orientation = 'up'
+            self.lookAround(self)
             
-        
+            
+    def lookAround(self):
+        A = time.time()
+        B = time.time()
+        timer = B - A
+        while timer < 4:
+            if timer < 1:
+                self.orientation = 'up'
+            if timer < 2:
+                self.orientation = 'right'
+            if timer < 3:
+                self.orientation = 'down'
+            if timer < 4:
+                self.orientation = 'left'
+                 
 
-    #known feature: enemy teleport back to starting position when cannot move forward
+    #patrol logic
     def patrol(self,app):
         '''if self.patrolLogic == 'straightVertical':
             if self.row == 0 or self.row == len(app.map) - 1:
@@ -283,6 +230,24 @@ class Enemy(Character):
                 app.map[self.row][self.col].character = self
             else:
                 self.dx = -self.dx'''
+        
+    #chase logic
+    def chase(self,app):
+        if app.counter % 10 == 0:
+            pathFindingMap = self.makePathFindingMap(app)
+            start = (self.row,self.col)
+            end = (app.playerRow, app.playerCol)
+            self.moveToLocation(pathFindingMap,start,end)
+            if isRightNextToEachOther((self.row,self.col),(app.player.row,app.player.col)):
+                self.melee(app)
+    
+    def stab(self,app):
+        self.playMeleeAnimation()
+        app.player.HP -= 30
+    
+    def playMeleeAnimation(self):
+        pass
+
     #pathfinding
 
     #make a 2D pathfinding map where 0 is walkable and 1 is not. The same row and col as the game map
@@ -297,16 +262,12 @@ class Enemy(Character):
                     pathFindingMap[row].append(1)
                 else:
                     pathFindingMap[row].append(0)
+        
         return pathFindingMap
 
-    def chase(self,app):
-        if app.counter % 10 == 0:
-            pathFindingMap = self.makePathFindingMap(app)
-            start = (self.row,self.col)
-            end = (app.playerRow, app.playerCol)
-            self.moveToLocation(pathFindingMap,start,end)
+    
 
-
+    #move to location
     def moveToLocation(self,pathFindingMap,start,end):
         path = []
         visited = set()
@@ -314,13 +275,11 @@ class Enemy(Character):
         if path == None:
             print('''I can't get there''')
         elif len(path) > 2:
-            targetRow = path[1][0]
-            targetCol = path[1][1]
+            targetRow = path[0][0]
+            targetCol = path[0][1]
             dRow = targetRow - self.row
-            dCol = targetCol - self.col
-            
-
-            
+            dCol = targetCol - self.col    
+                   
             self.move(app,dRow,dCol)
 
     
@@ -337,16 +296,15 @@ class Enemy(Character):
         elif dCol < 0:
             self.orientation = 'left'
         
+        self.clearCurrFOV(app)
+        self.clearHearing(app) 
         app.map[self.row][self.col].character = None 
         self.row += dRow
         self.top += dRow * self.height
         self.col += dCol
         self.left += dCol * self.width
         app.map[self.row][self.col].character = self
-        self.clearCurrFOV(app)
-    
-    
-
+        
 
 
 class Player(Character):
@@ -354,11 +312,21 @@ class Player(Character):
         super().__init__(name,left,top,width,height,row,col)
         self.HP = 100
         self.speed = 10
-        
+        self.isCrouched = False
+        self.isLoud = False
     
     def draw(self,app):
         drawRect(self.left,self.top,self.width,self.height,fill = 'blue')
-        
+    
+    #detection related:
+    '''def makeSound(self):
+        self.isLoud = True
+        A = time.time()
+        B = time.time()
+        while B - A < 0.2:
+            B = time.time()
+        self.isLoud = False'''
+
     #action:
     def CQC(self,app):
         for enemy in app.enemyList:
@@ -389,7 +357,9 @@ class Player(Character):
                 app.map[self.row][self.col].character = self
                 app.playerRow = self.row
                 app.playerCol = self.col
-                self.clearCurrFOV(app)
+                if self.isCrouched == False:
+                    self.makeSound()
+                
 
                 
     def moveDown(self,app):
@@ -403,7 +373,9 @@ class Player(Character):
                 app.map[self.row][self.col].character = self
                 app.playerRow = self.row
                 app.playerCol = self.col
-                self.clearCurrFOV(app)
+                if self.isCrouched == False:
+                    self.makeSound()
+                
     
     def moveRight(self,app):
         if self.col != len(app.map[0]) - 1:
@@ -416,7 +388,9 @@ class Player(Character):
                 app.map[self.row][self.col].character = self
                 app.playerRow = self.row
                 app.playerCol = self.col
-                self.clearCurrFOV(app)
+                if self.isCrouched == False:
+                    self.makeSound()
+                
                 
 
     def moveLeft(self,app):
@@ -430,5 +404,7 @@ class Player(Character):
                 app.map[self.row][self.col].character = self
                 app.playerRow = self.row
                 app.playerCol = self.col
-                self.clearCurrFOV(app)
+                if self.isCrouched == False:
+                    self.makeSound()
+                
 
