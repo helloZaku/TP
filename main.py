@@ -15,6 +15,7 @@ def loadImage(url):
 
 #appStart
 def onAppStart(app):
+    app.enemyList = []
     app.rows = 10
     app.cols = 15
     app.boardLeft = 50
@@ -26,6 +27,7 @@ def onAppStart(app):
     app.player = Player('snake')
     makeMap1(app)
     app.stepPerSecond = 1
+    
 
     app.counter = 0
     app.paused = True
@@ -35,8 +37,7 @@ def onAppStart(app):
     app.playerRow = 0
     app.playerCol = 0
 
-    #enemy list
-    app.enemyList = []
+   
 
     #pictures
     '''app.enemyPicUp = loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Red_Triangle.svg/516px-Red_Triangle.svg.png?20100215063256')
@@ -85,14 +86,10 @@ def onStep(app):
 
 def takeStep(app):
     app.counter += 1
-    print(app.counter)
-    for row in app.map:
-        for tile in row:
-            if tile.character != None:
-                if isinstance(tile.character,Enemy):
-                    if tile.character.inChase == True:
-                        tile.character.chase(app)
-                    #tile.character.patrol(app)
+    for enemy in app.enemyList:
+        if enemy.inChase == True:
+            enemy.chase(app)
+                    
 
 
 def main():
