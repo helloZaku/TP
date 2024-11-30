@@ -3,12 +3,9 @@
 #talked to Austin and he said i should try to find shortcuts in the paths to optimize it
 #squad leader uses a*, other enemies use this
 
-def findShortestPath(maze,startLocation,targetLocation,path = [],visited = set()):
+def findShortestPath(maze,startLocation,targetLocation,path,visited):
     print(f"Currently at: {startLocation}, Target: {targetLocation}, Path: {path}")
-    if path == []:
-        path.append(startLocation)
-        visited.add(startLocation)
-
+    
     if isRightNextToEachOther(startLocation,targetLocation):
         path.append(targetLocation)       
         return path
@@ -48,7 +45,7 @@ def findShortestPath(maze,startLocation,targetLocation,path = [],visited = set()
         for tile in sortedNeighbors:
             #if isLegalMove(maze,tile):
             path.append(tile)
-            solution = findShortestPath(maze,tile,targetLocation,path[:])
+            solution = findShortestPath(maze,tile,targetLocation,path[:],visited)
             if solution != None:
                 return solution
             else:
