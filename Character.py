@@ -4,7 +4,6 @@ from Character import *
 from Node import *
 import time
 from MyNode import *
-import pprint
 
 class Character:
     def __init__(self,name,left,top,width,height,row,col):
@@ -20,7 +19,8 @@ class Character:
     
     def createFOV(self,app):
         #create FOV in the middle and store locations of all FOV as tuples in 2D list so when on movement can clear current FOV
-        for i in range(3):
+        #when blocked by boundaires or object, the subsequent tiles should break
+        for i in range(5):
             if self.orientation == 'up':
                 if self.row - i >= 0:
                     tile = app.map[self.row - i][self.col]
@@ -45,6 +45,61 @@ class Character:
                     if tile.object == None and tile.character == None:
                         app.map[self.row][self.col - i].isInFOV = True
                         self.currFOV.append((self.row,self.col - i))
+            
+            #the 2 lines at the side
+            '''for i in range(5):
+                if self.orientation == 'up':
+                    if self.row - i >= 0:
+                        tile = app.map[self.row - i][self.col]
+                        if tile.object == None and tile.character == None:
+                            app.map[self.row - i][self.col].isInFOV = True
+                            self.currFOV.append((self.row - i,self.col))
+                elif self.orientation == 'down':
+                    if self.row + i <= len(app.map) - 1:
+                        tile = app.map[self.row + i][self.col]
+                        if tile.object == None and tile.character == None:
+                            app.map[self.row + i][self.col].isInFOV = True
+                            self.currFOV.append((self.row + i,self.col))
+                elif self.orientation == 'right':
+                    if self.col + i <= len(app.map[0]) - 1:
+                        tile = app.map[self.row][self.col + i]
+                        if tile.object == None and tile.character == None:
+                            app.map[self.row][self.col + i].isInFOV = True
+                            self.currFOV.append((self.row,self.col + i))
+                elif self.orientation == 'left':
+                    if self.col - i >= 0:
+                        tile = app.map[self.row][self.col - i]
+                        if tile.object == None and tile.character == None:
+                            app.map[self.row][self.col - i].isInFOV = True
+                            self.currFOV.append((self.row,self.col - i))'''
+            
+            #first 
+            '''for i in range(3):
+                for j in range(5)
+            if self.orientation == 'up':
+                if self.row - i >= 0:
+                    tile = app.map[self.row - i][self.col]
+                    if tile.object == None and tile.character == None:
+                        app.map[self.row - i][self.col].isInFOV = True
+                        self.currFOV.append((self.row - i,self.col))
+            elif self.orientation == 'down':
+                if self.row + i <= len(app.map) - 1:
+                    tile = app.map[self.row + i][self.col]
+                    if tile.object == None and tile.character == None:
+                        app.map[self.row + i][self.col].isInFOV = True
+                        self.currFOV.append((self.row + i,self.col))
+            elif self.orientation == 'right':
+                if self.col + i <= len(app.map[0]) - 1:
+                    tile = app.map[self.row][self.col + i]
+                    if tile.object == None and tile.character == None:
+                        app.map[self.row][self.col + i].isInFOV = True
+                        self.currFOV.append((self.row,self.col + i))
+            elif self.orientation == 'left':
+                if self.col - i >= 0:
+                    tile = app.map[self.row][self.col - i]
+                    if tile.object == None and tile.character == None:
+                        app.map[self.row][self.col - i].isInFOV = True
+                        self.currFOV.append((self.row,self.col - i))'''
     
     def clearCurrFOV(self,app):
         for (row,col) in self.currFOV:
@@ -72,6 +127,8 @@ class Enemy(Character):
         self.speed = 10
         self.alertMeter = 0
         self.susCounter = 0
+        self.hearingRadius = 4
+        self.currHearing = []
         
 
     def __repr(self):
@@ -89,95 +146,58 @@ class Enemy(Character):
             drawImage(app.enemyPicRight,self.left,self.top,width=self.width, height=self.height)
         elif self.orientation == 'left':
             drawImage(app.enemyPicLeft,self.left,self.top,width=self.width, height=self.height)'''
-        drawRect(self.left,self.top,self.width,self.height,fill = 'red')
-        self.createFOV(app)
+        if self.HP > 0:
+            drawRect(self.left,self.top,self.width,self.height,fill = 'red')
+            self.createFOV(app)
+            self.checkFOV(app)
+            self.createHearingRadius(app)
+            self.checkHearing(app)
+        elif self.HP == 0:
+            self.clearCurrFOV(app)
+            self.clearHearing(app)
+            drawRect(self.left,self.top,self.width,self.height,fill = 'purple')
         
         #because this function is called on step in redrawall, use it to check if player is in fov
-        self.checkFOV(app)
-
-
-    #investigate. is sus counter is 0, just look around before resume normal. if more than 1, start searching
-    def investigate(self,app,susTile):
-        self.moveToLocation((self.row,self.col),susTile)
-        orientations = ['up','right','down','left']
-        if self.susCounter == 0:
-            if app.counter % 5 == 0:
-                self.orientation = 'up'
-                startTime = time.time()
-                currTime = time.time()
-
-            elif app.counter % 10 == 0:
-                self.orientation = 'up'
-            elif app.counter % 15 == 0:
-                self.orientation = 'up'
-            elif app.counter % 20 == 0:
-                self.orientation = 'up'
-            
         
 
-    #known feature: enemy teleport back to starting position when cannot move forward
-    def patrol(self,app):
-        if self.patrolLogic == 'straightVertical':
-            if self.row == 0 or self.row == len(app.map) - 1:
-                self.dy = -self.dy
-            nextTile = app.map[self.row + self.dy][self.col]
-            if nextTile.character == None:
-                app.map[self.row][self.col].character = None 
-                self.row += self.dy
-                self.top += self.dy * self.height
-                app.map[self.row][self.col].character = self
-            else:
-                self.dy = -self.dy
+    def die(self):
+        self.HP = 0
 
-        elif self.patrolLogic == 'straightHorizontal':
-            if self.col == 0 or self.col == len(app.map[0]) - 1:
-                self.dx = -self.dx
+    def isInBounds(self,row,col,app):
+        if row > 0 and row < app.rows and col > 0 and col < app.cols:
+            return True
+        return False
+    
+    #Perception:
 
-            nextTile = app.map[self.row][self.col + self.dx]
-            if nextTile.character == None:
-                app.map[self.row][self.col].character = None 
-                self.col += self.dx
-                self.left += self.dx * self.width
-                app.map[self.row][self.col].character = self
-            else:
-                self.dx = -self.dx
-    #pathfinding
+    #Hearing
+    #yes if I can hear my roommate dancing enemies can hear through wall
+    def createHearingRadius(self,app):
+        if app.debuggingMode == True:
+                drawCircle(self.left + self.width / 2,self.top + self.height / 2,self.hearingRadius * self.width, fill = None,border='black', borderWidth=5,align='center')
+        
+        #horizontal rectangle
+        for currRow in range(-1,2):
+            for currCol in range(-3,4):
+                targetRow,targetCol = self.row + currRow, self.col + currCol
+                if self.isInBounds(targetRow,targetCol,app):
+                    app.map[targetRow][targetCol].isInHearing = True
+                    self.currHearing.append((targetRow,targetCol))
 
-    #make a 2D pathfinding map where 0 is walkable and 1 is not. The same row and col as the game map
-    def makePathFindingMap(self,app):
-        pathFindingMap = []
-        for row in range(app.rows):
-            pathFindingMap.append([])
-            for col in range(app.cols):
-                tile = app.map[row][col]
-                #if (tile.character != None and tile.character != self and tile.character != Player) or tile.object != None:
-                if (tile.character == Enemy and (tile.row,tile.col) != (self.row,self.col)) or tile.object != None:
-                    pathFindingMap[row].append(1)
-                else:
-                    pathFindingMap[row].append(0)
-        return pathFindingMap
+        #vertical rectangle
+        for currRow in range(-2,3):
+            for currCol in range(-2,3):
+                targetRow,targetCol = self.row + currRow, self.col + currCol
+                if self.isInBounds(targetRow,targetCol,app):
+                    app.map[targetRow][targetCol].isInHearing = True
+                    self.currHearing.append((targetRow,targetCol)) 
 
-    def chase(self,app):
-        if app.counter % 10 == 0:
-            pathFindingMap = self.makePathFindingMap(app)
-            start = (self.row,self.col)
-            end = (app.playerRow, app.playerCol)
-            self.moveToLocation(pathFindingMap,start,end)
+    def checkHearing(self,app):
+        pass
 
-
-    def moveToLocation(self,pathFindingMap,start,end):
-        path = astar(pathFindingMap, start, end)
-        if path == None:
-            print('''I can't get there''')
-        elif len(path) > 2:
-            targetRow = path[1][0]
-            targetCol = path[1][1]
-            dRow = targetRow - self.row
-            dCol = targetCol - self.col
-            
-
-            
-            self.move(app,dRow,dCol)
+    def clearHearing(self,app):
+        for row,col in self.currHearing:
+            app.map[row][col].isInHearing = False
 
     #FOV related stuff
     def createFOV(self, app):
@@ -218,6 +238,93 @@ class Enemy(Character):
             self.inPatrol = True
             self.inChase = False
 
+    #investigate. is sus counter is 0, just look around before resume normal. if more than 1, start searching
+    def investigate(self,app,susTile):
+        self.moveToLocation((self.row,self.col),susTile)
+        orientations = ['up','right','down','left']
+        if self.susCounter == 0:
+            if app.counter % 5 == 0:
+                self.orientation = 'up'
+                startTime = time.time()
+                currTime = time.time()
+
+            elif app.counter % 10 == 0:
+                self.orientation = 'up'
+            elif app.counter % 15 == 0:
+                self.orientation = 'up'
+            elif app.counter % 20 == 0:
+                self.orientation = 'up'
+            
+        
+
+    #known feature: enemy teleport back to starting position when cannot move forward
+    def patrol(self,app):
+        '''if self.patrolLogic == 'straightVertical':
+            if self.row == 0 or self.row == len(app.map) - 1:
+                self.dy = -self.dy
+            nextTile = app.map[self.row + self.dy][self.col]
+            if nextTile.character == None:
+                app.map[self.row][self.col].character = None 
+                self.row += self.dy
+                self.top += self.dy * self.height
+                app.map[self.row][self.col].character = self
+            else:
+                self.dy = -self.dy
+
+        elif self.patrolLogic == 'straightHorizontal':
+            if self.col == 0 or self.col == len(app.map[0]) - 1:
+                self.dx = -self.dx
+
+            nextTile = app.map[self.row][self.col + self.dx]
+            if nextTile.character == None:
+                app.map[self.row][self.col].character = None 
+                self.col += self.dx
+                self.left += self.dx * self.width
+                app.map[self.row][self.col].character = self
+            else:
+                self.dx = -self.dx'''
+    #pathfinding
+
+    #make a 2D pathfinding map where 0 is walkable and 1 is not. The same row and col as the game map
+    def makePathFindingMap(self,app):
+        pathFindingMap = []
+        for row in range(app.rows):
+            pathFindingMap.append([])
+            for col in range(app.cols):
+                tile = app.map[row][col]
+                #if (tile.character != None and tile.character != self and tile.character != Player) or tile.object != None:
+                if (tile.character == Enemy and (tile.row,tile.col) != (self.row,self.col)) or tile.object != None:
+                    pathFindingMap[row].append(1)
+                else:
+                    pathFindingMap[row].append(0)
+        return pathFindingMap
+
+    def chase(self,app):
+        if app.counter % 10 == 0:
+            pathFindingMap = self.makePathFindingMap(app)
+            start = (self.row,self.col)
+            end = (app.playerRow, app.playerCol)
+            self.moveToLocation(pathFindingMap,start,end)
+
+
+    def moveToLocation(self,pathFindingMap,start,end):
+        path = []
+        visited = set()
+        path = findShortestPath(pathFindingMap, start, end, path,visited)
+        if path == None:
+            print('''I can't get there''')
+        elif len(path) > 2:
+            targetRow = path[1][0]
+            targetCol = path[1][1]
+            dRow = targetRow - self.row
+            dCol = targetCol - self.col
+            
+
+            
+            self.move(app,dRow,dCol)
+
+    
+
     #have not implemented collision logic for objects and characters
     def move(self,app,dRow,dCol):
         #if app.counter % 10 == 0:
@@ -252,7 +359,17 @@ class Player(Character):
     def draw(self,app):
         drawRect(self.left,self.top,self.width,self.height,fill = 'blue')
         
-    
+    #action:
+    def CQC(self,app):
+        for enemy in app.enemyList:
+            if abs(self.row - enemy.row) + abs(self.col - enemy.col) == 1:
+                self.playCQCAnimation()
+                enemy.die()
+
+    def playCQCAnimation(self):
+        pass
+
+    #movement:
     def setLocation(self,left,top,width,height,row,col):
         self.left = left
         self.top = top
