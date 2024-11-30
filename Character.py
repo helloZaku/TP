@@ -4,6 +4,7 @@ from Character import *
 from Node import *
 import time
 from MyNode import *
+import pprint
 
 class Character:
     def __init__(self,name,left,top,width,height,row,col):
@@ -141,32 +142,34 @@ class Enemy(Character):
             else:
                 self.dx = -self.dx
     #pathfinding
-    
+
+    #make a 2D pathfinding map where 0 is walkable and 1 is not. The same row and col as the game map
+    def makePathFindingMap(self,app):
+        pathFindingMap = []
+        for row in range(app.rows):
+            pathFindingMap.append([])
+            for col in range(app.cols):
+                tile = app.map[row][col]
+                #if (tile.character != None and tile.character != self and tile.character != Player) or tile.object != None:
+                if (tile.character == Enemy and (tile.row,tile.col) != (self.row,self.col)) or tile.object != None:
+                    pathFindingMap[row].append(1)
+                else:
+                    pathFindingMap[row].append(0)
+        return pathFindingMap
+
     def chase(self,app):
         if app.counter % 10 == 0:
-            maze = [
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-            ]
-
-                
+            pathFindingMap = self.makePathFindingMap(app)
             start = (self.row,self.col)
             end = (app.playerRow, app.playerCol)
+            self.moveToLocation(pathFindingMap,start,end)
 
-            self.moveToLocation(maze,start,end)
 
-    def moveToLocation(self,maze,start,end):
-        path = findShortestPath(app,maze, start, end)
-        
-        if len(path) > 2:
+    def moveToLocation(self,pathFindingMap,start,end):
+        path = astar(pathFindingMap, start, end)
+        if path == None:
+            print('''I can't get there''')
+        elif len(path) > 2:
             targetRow = path[1][0]
             targetCol = path[1][1]
             dRow = targetRow - self.row
