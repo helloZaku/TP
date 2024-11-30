@@ -28,6 +28,7 @@ def onAppStart(app):
     makeMap1(app)
     app.stepPerSecond = 1
     
+    app.debuggingMode = True
 
     app.counter = 0
     app.paused = True
@@ -36,7 +37,6 @@ def onAppStart(app):
     #player position
     app.playerRow = 0
     app.playerCol = 0
-
    
 
     #pictures
@@ -65,6 +65,9 @@ def onKeyPress(app, key):
         app.paused = not app.paused
     elif key == 's':
         takeStep(app)
+    elif key == 'f':
+        #takedown enemy
+        app.player.CQC(app)
             
 def onKeyHold(app,keys):
     if app.counter % 5 == 0:
