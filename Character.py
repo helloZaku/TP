@@ -70,6 +70,7 @@ class Enemy(Character):
         self.susCounter = 0
         self.hearingRadius = 4
         self.currHearing = []
+        self.startedChase = False
         
 
     def __repr(self):
@@ -92,7 +93,7 @@ class Enemy(Character):
             self.createFOV(app)
             self.createHearingRadius(app)
             self.checkFOV(app)
-            self.checkHearing(app)
+            
         elif self.HP == 0:
             self.clearCurrFOV(app)
             self.clearHearing(app)
@@ -133,10 +134,7 @@ class Enemy(Character):
                     app.map[targetRow][targetCol].isInHearing = True
                     self.currHearing.append((targetRow,targetCol)) 
 
-    def checkHearing(self,app):
-        if app.player.isCrouched == False and app.player.isLoud == True and (app.playerRow, app.playerCol) in self.currHearing:
-            susTile = (app.playerRow, app.playerCol)
-            self.investigate(app,susTile)
+    
 
     def clearHearing(self,app):
         for row,col in self.currHearing:
@@ -181,66 +179,64 @@ class Enemy(Character):
             self.inPatrol = True
             self.inChase = False
 
+    def heardSomething(self,targetTileRowAndCol):
+        print("I heard something")
+        self.investigate(app,targetTileRowAndCol)
+
     #investigate. is sus counter is 0, just look around before resume normal. if more than 1, start searching
     def investigate(self,app,susTile):
+        print('investigating!')
+        
         self.moveToLocation((self.row,self.col),susTile)
-        orientations = ['up','right','down','left']
         if self.susCounter == 0:
-            self.lookAround(self)
+            self.lookAround()
             
             
     def lookAround(self):
+        print('looking around!')
         A = time.time()
         B = time.time()
         timer = B - A
         while timer < 4:
             if timer < 1:
                 self.orientation = 'up'
-            if timer < 2:
+            elif 1 < timer < 2:
                 self.orientation = 'right'
-            if timer < 3:
+            elif 2 < timer < 3:
                 self.orientation = 'down'
-            if timer < 4:
+            elif 3 < timer < 4:
                 self.orientation = 'left'
+            B = time.time()
+            timer = B - A
                  
 
     #patrol logic
     def patrol(self,app):
-        '''if self.patrolLogic == 'straightVertical':
-            if self.row == 0 or self.row == len(app.map) - 1:
-                self.dy = -self.dy
-            nextTile = app.map[self.row + self.dy][self.col]
-            if nextTile.character == None:
-                app.map[self.row][self.col].character = None 
-                self.row += self.dy
-                self.top += self.dy * self.height
-                app.map[self.row][self.col].character = self
-            else:
-                self.dy = -self.dy
-
-        elif self.patrolLogic == 'straightHorizontal':
-            if self.col == 0 or self.col == len(app.map[0]) - 1:
-                self.dx = -self.dx
-
-            nextTile = app.map[self.row][self.col + self.dx]
-            if nextTile.character == None:
-                app.map[self.row][self.col].character = None 
-                self.col += self.dx
-                self.left += self.dx * self.width
-                app.map[self.row][self.col].character = self
-            else:
-                self.dx = -self.dx'''
+        pass
         
     #chase logic
-    def chase(self,app):
-        if app.counter % 10 == 0:
-            pathFindingMap = self.makePathFindingMap(app)
-            start = (self.row,self.col)
-            end = (app.playerRow, app.playerCol)
-            self.moveToLocation(pathFindingMap,start,end)
-            if isRightNextToEachOther((self.row,self.col),(app.player.row,app.player.col)):
-                self.melee(app)
-    
+    def startChase(self,app):
+        self.startedChase = True
+        while self.inChase == True:
+        #if app.counter % 10 == 0:
+            distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
+            #while distance more than 5, take 5 steps than recalculate position
+            while distance > 5:
+                if app.counter % 50 == 0:
+                    self.takeFiveStepsToLocation((self.row,self.col),(app.playerRow, app.playerCol))
+                    distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
+            while 2 < distance < 5:
+                if app.counter % 10 == 0:
+                    self.takeOneStepToLocation((self.row - app.playerRow),(self.col - app.playerCol))
+                    distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
+            self.inChase = False
+            self.startedChase = False
+            self.alertMeter = -10
+            #melee logic currenlty broken with int object is not subscriptable
+            #if isRightNextToEachOther((self.row,self.col),(app.player.row,app.player.col)):
+                #self.melee(app)
+
+
     def stab(self,app):
         self.playMeleeAnimation()
         app.player.HP -= 30
@@ -266,11 +262,29 @@ class Enemy(Character):
         return pathFindingMap
 
     
-
     #move to location
-    def moveToLocation(self,pathFindingMap,start,end):
+    def takeFiveStepsTowardsLocation(self,start,end):
+        print('taking 5 steps!')
         path = []
         visited = set()
+        pathFindingMap = self.makePathFindingMap(app)
+        path = findShortestPath(pathFindingMap, start, end, path,visited)
+        if path == None:
+            print('''I can't get there''')
+        else:
+            while len(path) > 0:
+                targetRow = path[0][0]
+                targetCol = path[0][1]
+                dRow = targetRow - self.row
+                dCol = targetCol - self.col
+                self.move(app,dRow,dCol)
+                path.pop(0)
+
+    
+    def takeOneStepTowardsLocation(self,start,end):
+        path = []
+        visited = set()
+        pathFindingMap = self.makePathFindingMap(app)
         path = findShortestPath(pathFindingMap, start, end, path,visited)
         if path == None:
             print('''I can't get there''')
@@ -279,9 +293,24 @@ class Enemy(Character):
             targetCol = path[0][1]
             dRow = targetRow - self.row
             dCol = targetCol - self.col    
-                   
-            self.move(app,dRow,dCol)
+            self.move(app,dRow,dCol) 
+    
 
+    def moveToLocation(self,start,end):
+        path = []
+        visited = set()
+        pathFindingMap = self.makePathFindingMap(app)
+        path = findShortestPath(pathFindingMap, start, end, path,visited)
+        if path == None:
+            print('''I can't get there''')
+        else:
+            while self.inChase == False and len(path) > 0:
+                targetRow = path[0][0]
+                targetCol = path[0][1]
+                dRow = targetRow - self.row
+                dCol = targetCol - self.col    
+                self.move(app,dRow,dCol)
+                path.pop(0)
     
 
     #have not implemented collision logic for objects and characters
@@ -313,19 +342,18 @@ class Player(Character):
         self.HP = 100
         self.speed = 10
         self.isCrouched = False
-        self.isLoud = False
+        
     
     def draw(self,app):
         drawRect(self.left,self.top,self.width,self.height,fill = 'blue')
     
     #detection related:
-    '''def makeSound(self):
-        self.isLoud = True
-        A = time.time()
-        B = time.time()
-        while B - A < 0.2:
-            B = time.time()
-        self.isLoud = False'''
+
+    def checkIfInHearingRadius(self,app):
+        for enemy in app.enemyList:
+            if (self.row,self.col) in enemy.currHearing and enemy.inChase == False:
+                enemy.heardSomething((self.row,self.col))
+                
 
     #action:
     def CQC(self,app):
@@ -358,7 +386,7 @@ class Player(Character):
                 app.playerRow = self.row
                 app.playerCol = self.col
                 if self.isCrouched == False:
-                    self.makeSound()
+                    self.checkIfInHearingRadius(app)
                 
 
                 
@@ -374,7 +402,7 @@ class Player(Character):
                 app.playerRow = self.row
                 app.playerCol = self.col
                 if self.isCrouched == False:
-                    self.makeSound()
+                    self.checkIfInHearingRadius(app)
                 
     
     def moveRight(self,app):
@@ -389,7 +417,7 @@ class Player(Character):
                 app.playerRow = self.row
                 app.playerCol = self.col
                 if self.isCrouched == False:
-                    self.makeSound()
+                    self.checkIfInHearingRadius(app)
                 
                 
 
@@ -405,6 +433,6 @@ class Player(Character):
                 app.playerRow = self.row
                 app.playerCol = self.col
                 if self.isCrouched == False:
-                    self.makeSound()
+                    self.checkIfInHearingRadius(app)
                 
 
