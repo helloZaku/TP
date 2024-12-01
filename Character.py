@@ -4,6 +4,7 @@ from Character import *
 from Node import *
 import time
 from MyNode import *
+import random
 
 class Character:
     def __init__(self,name,left,top,width,height,row,col):
@@ -24,27 +25,35 @@ class Character:
             if self.orientation == 'up':
                 if self.row - i >= 0:
                     tile = app.map[self.row - i][self.col]
-                    if tile.object == None and tile.character == None:
+                    if tile.object == None:
                         app.map[self.row - i][self.col].isInFOV = True
                         self.currFOV.append((self.row - i,self.col))
+                    else:
+                        break
             elif self.orientation == 'down':
                 if self.row + i <= len(app.map) - 1:
                     tile = app.map[self.row + i][self.col]
                     if tile.object == None and tile.character == None:
                         app.map[self.row + i][self.col].isInFOV = True
                         self.currFOV.append((self.row + i,self.col))
+                    else:
+                        break
             elif self.orientation == 'right':
                 if self.col + i <= len(app.map[0]) - 1:
                     tile = app.map[self.row][self.col + i]
                     if tile.object == None and tile.character == None:
                         app.map[self.row][self.col + i].isInFOV = True
                         self.currFOV.append((self.row,self.col + i))
+                    else:
+                        break
             elif self.orientation == 'left':
                 if self.col - i >= 0:
                     tile = app.map[self.row][self.col - i]
                     if tile.object == None and tile.character == None:
                         app.map[self.row][self.col - i].isInFOV = True
                         self.currFOV.append((self.row,self.col - i))
+                    else:
+                        break
             
             #the 2 lines at the side
             
@@ -71,6 +80,9 @@ class Enemy(Character):
         self.hearingRadius = 4
         self.currHearing = []
         self.startedChase = False
+        self.firstDetection = False
+        self.searchedTiles = 0
+        self.searchMap = []
         
 
     def __repr(self):
@@ -150,8 +162,11 @@ class Enemy(Character):
     
     def checkFOV(self,app):
         
+        #how fast alertMeter buildup is exponential to how close player is to enemy
         if (app.playerRow, app.playerCol) in self.currFOV:
-            self.alertMeter += 1
+            distance = (app.playerRow - self.row)**2 + (app.playerCol - self.col)**2
+            increment = 1 - distance * 0.01
+            self.alertMeter += increment
         else:
             self.alertMeter -= 1
             if self.alertMeter < 0:
@@ -162,25 +177,48 @@ class Enemy(Character):
             self.alertMeter = 299
 
         #if player is detected start chase and chase will last while
-        if self.alertMeter >= 50:
+        elif self.alertMeter >= 50 and self.firstDetection == False:
             self.alertMeter = 200
+            self.firstDetection = True
             self.inInvestigate = False
             self.inPatrol = False
             self.inChase = True
 
-        #player out of FOV, start investigating
-        if self.alertMeter < 100:
-            self.inInvestigate = True
+        #player out of FOV, start searching
+        elif self.alertMeter < 50:
+            self.firstDetection = False
+            self.inSearching = True
+            #self.searchRadius
             self.inPatrol = False
-            self.inChase = False
 
-        #must have been the wind
-        if self.alertMeter == 0:
-            self.inInvestigate = False
-            self.inPatrol = True
-            self.inChase = False
+            #check if player out of all enemies' view
+            for enemy in app.enemyList:
+                if self.alertMeter > 50:
+                    someoneStillChasing = True
+                    break
+                else:
+                    someoneStillChasing = False
 
-        print(self.alertMeter)
+            #if noone's chasing, turn off all enemies' chase, generate LKL of player and start search the radius
+            if someoneStillChasing == False:
+                app.lastKnownLocationOfPlayer = (app.playerRow,app.playerCol)
+                for enemy in app.enemyList:
+                    enemy.inChase = False
+
+    #randomly select a tile in a square of 4 around the LKL
+    def generateRandomSearchTile(self,app):
+        valid = False
+        while not valid:
+            dR = random.randint(-4,4)
+            targetRow = dR + app.lastKnownLocationOfPlayer[0]
+            dC = random.randint(-4,4)
+            targetCol = dC + app.lastKnownLocationOfPlayer[1]
+            if self.isInBounds(targetRow,targetCol,app):
+                tile = app.map
+
+        
+
+        
     def heardSomething(self,targetTileRowAndCol):
         print("I heard something")
         self.investigate(app,targetTileRowAndCol)
@@ -237,6 +275,24 @@ class Enemy(Character):
             #if isRightNextToEachOther((self.row,self.col),(app.player.row,app.player.col)):
                 #self.melee(app)
 
+    def chaseStep(self,app):
+        path = []
+        visited = set()
+        pathFindingMap = self.makePathFindingMap(app)
+        start = (self.row,self.col)
+        end = (app.player.row,app.player.col)
+        path = findShortestPath(pathFindingMap, start, end, path,visited)
+        
+        if path == None:
+            print('''I can't get there''')
+        else:
+            targetRow = path[0][0]
+            targetCol = path[0][1]
+            dRow = targetRow - self.row
+            dCol = targetCol - self.col
+            self.move(app,dRow,dCol)
+            path.pop(0)
+                
 
     def stab(self,app):
         self.playMeleeAnimation()
