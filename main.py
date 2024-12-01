@@ -13,6 +13,7 @@ def loadImage(url):
     cmuImage = CMUImage(pilImage)
     return cmuImage
 
+
 #appStart
 def onAppStart(app):
     app.enemyList = []
@@ -37,22 +38,21 @@ def onAppStart(app):
     #player position
     app.playerRow = 0
     app.playerCol = 0
-   
+    app.lastKnownLocationOfPlayer = (0,0)
 
     #pictures
     '''app.enemyPicUp = loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Red_Triangle.svg/516px-Red_Triangle.svg.png?20100215063256')
     app.enemyPicLeft = loadImage('https://upload.wikimedia.org/wikipedia/commons/f/f1/Long_red_right-pointing_triangle.svg')
     app.enemyPicDown = loadImage('https://www.emoji.co.uk/files/microsoft-emojis/symbols-windows10/10303-up-pointing-red-triangle.png')
     app.enemyPicRight = loadImage('https://commons.wikimedia.org/wiki/File:TriangleArrow-Left-red.png')'''
+    app.titleScreen = CMUImage(Image.open('titleScreen.jpeg'))
 
 ############################################################
 # Start Screen
 ############################################################
 
 def start_redrawAll(app):
-    drawLabel('Welcome!', 200, 160, size=24, bold=True)
-    # Note: we can access app.highScore (and all app variables) from any screen
-    drawLabel('Press space to begin!', 200, 240, size=16)
+    drawImage(app.titleScreen,0,0)
 
 def start_onKeyPress(app, key):
     if key == 'space':
@@ -109,10 +109,10 @@ def map1_onStep(app):
 def map1_takeStep(app):
     app.counter += 1
     for enemy in app.enemyList:
-        if enemy.inChase == True and enemy.startedChase == False:
+        if enemy.inChase == True and app.counter % 20 == 0:
             for enemy in app.enemyList:
                 enemy.inChase = True
-                enemy.startChase(app)
+                enemy.chaseStep(app)
                 
                     
 
