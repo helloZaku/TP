@@ -106,7 +106,7 @@ class Enemy(Character):
         self.HP = 0
 
     def isInBounds(self,row,col,app):
-        if row > 0 and row < app.rows and col > 0 and col < app.cols:
+        if row >= 0 and row < app.rows and col >= 0 and col < app.cols:
             return True
         return False
     
@@ -139,6 +139,7 @@ class Enemy(Character):
     def clearHearing(self,app):
         for row,col in self.currHearing:
             app.map[row][col].isInHearing = False
+        self.currHearing = []
 
     #FOV related stuff
     def createFOV(self, app):
@@ -218,21 +219,23 @@ class Enemy(Character):
     def startChase(self,app):
         self.startedChase = True
         while self.inChase == True:
-        #if app.counter % 10 == 0:
-            distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
-            #while distance more than 5, take 5 steps than recalculate position
-            while distance > 5:
-                if app.counter % 50 == 0:
-                    self.takeFiveStepsToLocation((self.row,self.col),(app.playerRow, app.playerCol))
-                    distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
-            while 2 < distance < 5:
-                if app.counter % 10 == 0:
-                    self.takeOneStepToLocation((self.row - app.playerRow),(self.col - app.playerCol))
-                    distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
+            if app.counter % 10 == 0:
+                distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
+                #while distance more than 5, take 5 steps than recalculate position
+                while distance > 5:
+                    if app.counter % 10 == 0:
+                        self.takeFiveStepsTowardsLocation((self.row,self.col),(app.playerRow, app.playerCol))
+                        distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
+                while 2 < distance < 5:
+                    if app.counter % 10 == 0:
+                        self.takeOneStepTowardsLocation((self.row - app.playerRow),(self.col - app.playerCol))
+                        distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
+                #distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
             self.inChase = False
             self.startedChase = False
             self.alertMeter = -10
-            #melee logic currenlty broken with int object is not subscriptable
+
+            #melee logic
             #if isRightNextToEachOther((self.row,self.col),(app.player.row,app.player.col)):
                 #self.melee(app)
 
