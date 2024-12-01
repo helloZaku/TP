@@ -90,8 +90,11 @@ def onStep(app):
 def takeStep(app):
     app.counter += 1
     for enemy in app.enemyList:
-        if enemy.inChase == True:
-            enemy.chase(app)
+        if enemy.inChase == True and enemy.startedChase == False:
+            for enemy in app.enemyList:
+                enemy.inChase = True
+                enemy.startChase(app)
+                
                     
 
 
