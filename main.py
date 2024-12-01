@@ -45,8 +45,27 @@ def onAppStart(app):
     app.enemyPicDown = loadImage('https://www.emoji.co.uk/files/microsoft-emojis/symbols-windows10/10303-up-pointing-red-triangle.png')
     app.enemyPicRight = loadImage('https://commons.wikimedia.org/wiki/File:TriangleArrow-Left-red.png')'''
 
+############################################################
+# Start Screen
+############################################################
 
-def redrawAll(app):
+def start_redrawAll(app):
+    drawLabel('Welcome!', 200, 160, size=24, bold=True)
+    # Note: we can access app.highScore (and all app variables) from any screen
+    drawLabel('Press space to begin!', 200, 240, size=16)
+
+def start_onKeyPress(app, key):
+    if key == 'space':
+        setActiveScreen('map1')
+
+############################################################
+# map1 Screen
+############################################################
+def map1_onScreenActivate(app):
+    # Every time we switch to the game screen, reset the score
+    app.score = 0
+
+def map1_redrawAll(app):
     drawBoard(app)
     drawBoardBorder(app)
     drawTiles(app)
@@ -60,19 +79,19 @@ def drawTiles(app):
 
 #player movement logic and various commands.
 
-def onKeyPress(app, key):
+def map1_onKeyPress(app, key):
     if key == 'p':
         app.paused = not app.paused
     elif key == 's':
-        takeStep(app)
+        map1_takeStep(app)
     elif key == 'f':
         #takedown enemy
         app.player.CQC(app)
             
-def onKeyHold(app,keys):
+def map1_onKeyHold(app,keys):
     if app.counter % 5 == 0:
         if 'up' in keys:
-                app.player.moveUp(app)
+            app.player.moveUp(app)
         elif 'down' in keys:
             app.player.moveDown(app)
         elif 'right' in keys:
@@ -83,11 +102,11 @@ def onKeyHold(app,keys):
 # initializing and running the app
 
 
-def onStep(app):
+def map1_onStep(app):
     if not app.paused: 
-        takeStep(app)
+        map1_takeStep(app)
 
-def takeStep(app):
+def map1_takeStep(app):
     app.counter += 1
     for enemy in app.enemyList:
         if enemy.inChase == True and enemy.startedChase == False:
@@ -97,9 +116,12 @@ def takeStep(app):
                 
                     
 
+############################################################
+# Main
+############################################################
 
 def main():
 
-    runApp()
+    runAppWithScreens(initialScreen='start')
 
 main()
