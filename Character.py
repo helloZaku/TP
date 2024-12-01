@@ -180,6 +180,7 @@ class Enemy(Character):
             self.inPatrol = True
             self.inChase = False
 
+        print(self.alertMeter)
     def heardSomething(self,targetTileRowAndCol):
         print("I heard something")
         self.investigate(app,targetTileRowAndCol)
@@ -219,21 +220,18 @@ class Enemy(Character):
     def startChase(self,app):
         self.startedChase = True
         while self.inChase == True:
-            if app.counter % 10 == 0:
-                distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
-                #while distance more than 5, take 5 steps than recalculate position
-                while distance > 5:
-                    if app.counter % 10 == 0:
-                        self.takeFiveStepsTowardsLocation((self.row,self.col),(app.playerRow, app.playerCol))
-                        distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
-                while 2 < distance < 5:
-                    if app.counter % 10 == 0:
-                        self.takeOneStepTowardsLocation((self.row - app.playerRow),(self.col - app.playerCol))
-                        distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
-                #distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
-            self.inChase = False
-            self.startedChase = False
-            self.alertMeter = -10
+            distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
+            #while distance more than 5, take 5 steps than recalculate position
+            if distance > 5:
+                #take 5 steps while take 1 when closer
+                self.takeXStepsTowardsLocation((self.row,self.col),(app.playerRow, app.playerCol),5)
+            elif 3 < distance <= 5:
+                self.takeXStepsTowardsLocation((self.row,self.col),(app.playerRow, app.playerCol),1)
+            else:
+            #distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
+                self.inChase = False
+                self.startedChase = False
+                self.alertMeter = -10
 
             #melee logic
             #if isRightNextToEachOther((self.row,self.col),(app.player.row,app.player.col)):
@@ -266,37 +264,26 @@ class Enemy(Character):
 
     
     #move to location
-    def takeFiveStepsTowardsLocation(self,start,end):
-        print('taking 5 steps!')
+    def takeXStepsTowardsLocation(self,start,end,X):
+        print(f'taking {X} steps!')
         path = []
         visited = set()
         pathFindingMap = self.makePathFindingMap(app)
         path = findShortestPath(pathFindingMap, start, end, path,visited)
+        currStep = 0
+        print('we are here')
         if path == None:
             print('''I can't get there''')
         else:
-            while len(path) > 0:
-                targetRow = path[0][0]
-                targetCol = path[0][1]
-                dRow = targetRow - self.row
-                dCol = targetCol - self.col
-                self.move(app,dRow,dCol)
-                path.pop(0)
-
-    
-    def takeOneStepTowardsLocation(self,start,end):
-        path = []
-        visited = set()
-        pathFindingMap = self.makePathFindingMap(app)
-        path = findShortestPath(pathFindingMap, start, end, path,visited)
-        if path == None:
-            print('''I can't get there''')
-        elif len(path) > 2:
-            targetRow = path[0][0]
-            targetCol = path[0][1]
-            dRow = targetRow - self.row
-            dCol = targetCol - self.col    
-            self.move(app,dRow,dCol) 
+            while currStep < X and len(path) > 0:
+                if app.counter % 10 == 0: 
+                    targetRow = path[0][0]
+                    targetCol = path[0][1]
+                    dRow = targetRow - self.row
+                    dCol = targetCol - self.col
+                    self.move(app,dRow,dCol)
+                    path.pop(0)
+                    currStep += 1
     
 
     def moveToLocation(self,start,end):
@@ -353,9 +340,10 @@ class Player(Character):
     #detection related:
 
     def checkIfInHearingRadius(self,app):
-        for enemy in app.enemyList:
+        pass
+        '''for enemy in app.enemyList:
             if (self.row,self.col) in enemy.currHearing and enemy.inChase == False:
-                enemy.heardSomething((self.row,self.col))
+                enemy.heardSomething((self.row,self.col))'''
                 
 
     #action:
