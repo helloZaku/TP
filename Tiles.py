@@ -6,6 +6,7 @@ class Tiles:
 
     def __init__(self,left,top,width,height,Character = None,Object = None):
         self.isInFOV = False
+        self.isInHearing = False
         self.character = Character
         self.object = Object
         self.left = left
@@ -22,5 +23,9 @@ class Tiles:
         elif self.character != None:
             self.character.draw(app)
         elif self.isInFOV == True:
-            drawRect(self.left,self.top,self.width,self.height,fill = 'yellow')
+            if app.debuggingMode == True:
+                drawRect(self.left,self.top,self.width,self.height,fill = 'yellow')
+        elif self.isInHearing == True:
+            if app.debuggingMode == True:
+                drawRect(self.left,self.top,self.width,self.height,fill = 'lightBlue',opacity = 70)
         
