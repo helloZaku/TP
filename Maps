@@ -36,16 +36,27 @@ def getCellSize(app):
 #draw the map the characters actually use(a 2D list);doesn't show up on screen
 def makeMap1(app):
     app.map = [
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,2,0,0,0,0,0,0,1,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,4,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0],
+        [0,0,0,0,4,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0],
+        [0,0,0,0,4,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0],
+        [0,0,4,4,4,0,0,0,0,0,0,4,4,4,4,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,4,0,4,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,4,0,4,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,4,1,4,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,4,0,4,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,4,0,4,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        
     ]
     for row in range(app.rows):
         for col in range(app.cols):
@@ -54,8 +65,10 @@ def makeMap1(app):
                 if app.map[row][col] == 0:
                     app.map[row][col] = Tiles(left,top,cellWidth,cellHeight)
                 elif app.map[row][col] == 1:
-                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,Enemy('verticalPatrolGuy',left,top,cellWidth,cellHeight,row,col,
-                                                                                  'straightVertical'))
+                    Jimmy = Enemy('verticalPatrolGuy',left,top,cellWidth,cellHeight,row,col,
+                                                                                  'straightVertical')
+                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,Jimmy)
+                    app.enemyList.append(Jimmy)
                 elif app.map[row][col] == 2:
                     app.player.setLocation(left,top,cellWidth,cellHeight,row,col)
                     app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,app.player)
