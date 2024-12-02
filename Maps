@@ -43,18 +43,18 @@ def makeMap1(app):
         [0,0,0,0,4,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0],
         [0,0,4,4,4,0,0,0,0,0,0,4,4,4,4,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,4,0,0,0,0,4,0,4,0,0,0,0,4,0,0,0,0,0],
+        [0,4,0,0,0,0,0,4,0,4,0,0,0,0,0,4,0,0,0,0],
+        [0,0,0,0,0,0,0,4,1,4,0,0,0,0,0,0,4,0,0,0],
         [0,0,0,0,0,0,0,4,0,4,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,4,0,4,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,4,1,4,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,4,0,4,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,4,0,4,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,4,4,4,4,0,0,0,0,0,0,0,0,0,4,4,4,4,4,0],
+        [0,0,0,0,4,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0],
+        [0,0,0,0,4,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0],
+        [0,0,0,0,4,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         
     ]
@@ -65,16 +65,16 @@ def makeMap1(app):
                 if app.map[row][col] == 0:
                     app.map[row][col] = Tiles(left,top,cellWidth,cellHeight)
                 elif app.map[row][col] == 1:
-                    Jimmy = Enemy('verticalPatrolGuy',left,top,cellWidth,cellHeight,row,col,
-                                                                                  'straightVertical')
+                    Jimmy = Enemy('Ocelot',left,top,cellWidth,cellHeight,row,col,
+                                [(0,0),(10,10)])
                     app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,Jimmy)
                     app.enemyList.append(Jimmy)
                 elif app.map[row][col] == 2:
                     app.player.setLocation(left,top,cellWidth,cellHeight,row,col)
                     app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,app.player)
                 elif app.map[row][col] == 3:
-                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,Enemy('Jimmy',left,top,cellWidth,cellHeight,row,col,
-                                                                                  'straightHorizontal'))
+                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,Enemy('Liquid',left,top,cellWidth,cellHeight,row,col,
+                                                                                  [(0,0),(10,10)]))
                 elif app.map[row][col] == 4:
                     app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,None,Wall(left,top,cellWidth,cellHeight,row,col))
                 elif app.map[row][col] == 5:
