@@ -74,6 +74,7 @@ class Enemy(Character):
         self.inChase = False
         self.inPatrol = False
         self.inInvestigate = False
+        self.inSearch = False
         self.speed = 10
         self.alertMeter = 0
         self.susCounter = 0
@@ -83,6 +84,10 @@ class Enemy(Character):
         self.firstDetection = False
         self.searchedTiles = 0
         self.searchMap = []
+        self.searchTile = None
+        self.numberOfTileSearched = 0
+        self.searchCurrStep = 0
+        self.currSearchPath = None
         
 
     def __repr(self):
@@ -102,13 +107,13 @@ class Enemy(Character):
             drawImage(app.enemyPicLeft,self.left,self.top,width=self.width, height=self.height)'''
         if self.HP > 0:
             drawRect(self.left,self.top,self.width,self.height,fill = 'red')
-            self.createFOV(app)
+            '''self.createFOV(app)
             self.createHearingRadius(app)
-            self.checkFOV(app)
+            self.checkFOV(app)'''
             
         elif self.HP == 0:
-            self.clearCurrFOV(app)
-            self.clearHearing(app)
+            '''self.clearCurrFOV(app)
+            self.clearHearing(app)'''
             drawRect(self.left,self.top,self.width,self.height,fill = 'purple')
         
         #because this function is called on step in redrawall, use it to check if player is in fov
@@ -127,8 +132,8 @@ class Enemy(Character):
     #Hearing
     #yes if I can hear my roommate dancing enemies can hear through wall
     def createHearingRadius(self,app):
-        if app.debuggingMode == True:
-                drawCircle(self.left + self.width / 2,self.top + self.height / 2,self.hearingRadius * self.width, fill = None,border='black', borderWidth=5,align='center')
+        #if app.debuggingMode == True:
+                #drawCircle(self.left + self.width / 2,self.top + self.height / 2,self.hearingRadius * self.width, fill = None,border='black', borderWidth=5,align='center')
         
         #horizontal rectangle
         for currRow in range(-1,2):
@@ -185,36 +190,29 @@ class Enemy(Character):
             self.inChase = True
 
         #player out of FOV, start searching
-        elif self.alertMeter < 50:
+        elif self.alertMeter < 50 and self.firstDetection == True:
             self.firstDetection = False
-            self.inSearching = True
+            self.inSearch = True
             #self.searchRadius
             self.inPatrol = False
 
             #check if player out of all enemies' view
-            for enemy in app.enemyList:
-                if self.alertMeter > 50:
-                    someoneStillChasing = True
-                    break
-                else:
-                    someoneStillChasing = False
-
-            #if noone's chasing, turn off all enemies' chase, generate LKL of player and start search the radius
-            if someoneStillChasing == False:
-                app.lastKnownLocationOfPlayer = (app.playerRow,app.playerCol)
-                for enemy in app.enemyList:
-                    enemy.inChase = False
+            
+                    
+                    
 
     #randomly select a tile in a square of 4 around the LKL
-    def generateRandomSearchTile(self,app):
+    def generateRandomSearchTile(self,app,searchTileTuple):
         valid = False
         while not valid:
-            dR = random.randint(-4,4)
-            targetRow = dR + app.lastKnownLocationOfPlayer[0]
-            dC = random.randint(-4,4)
-            targetCol = dC + app.lastKnownLocationOfPlayer[1]
+            dR = random.randint(-10,10)
+            targetRow = dR + searchTileTuple[0]
+            dC = random.randint(-10,10)
+            targetCol = dC + searchTileTuple[1]
             if self.isInBounds(targetRow,targetCol,app):
-                tile = app.map
+                tile = app.map[targetRow][targetCol]
+                if tile.object == None:
+                    return (targetRow,targetCol)
 
         
 
@@ -275,12 +273,12 @@ class Enemy(Character):
             #if isRightNextToEachOther((self.row,self.col),(app.player.row,app.player.col)):
                 #self.melee(app)
 
-    def chaseStep(self,app):
+    def takeAStep(self,app,targetRow,targetCol):
         path = []
         visited = set()
         pathFindingMap = self.makePathFindingMap(app)
         start = (self.row,self.col)
-        end = (app.player.row,app.player.col)
+        end = (targetRow,targetCol)
         path = findShortestPath(pathFindingMap, start, end, path,visited)
         
         if path == None:
@@ -292,6 +290,7 @@ class Enemy(Character):
             dCol = targetCol - self.col
             self.move(app,dRow,dCol)
             path.pop(0)
+            print('took a step')
                 
 
     def stab(self,app):
