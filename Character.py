@@ -65,14 +65,14 @@ class Character:
 
 
 class Enemy(Character):
-    def __init__(self,name,left,top,width,height,row,col,patrolLogic):
+    def __init__(self,name,left,top,width,height,row,col,patrolNodes):
         super().__init__(name,left,top,width,height,row,col)
         self.HP = 100
-        self.patrolLogic = patrolLogic
+        self.patrolLogic = patrolNodes
         self.dx = 1
         self.dy = 1
         self.inChase = False
-        self.inPatrol = False
+        self.inPatrol = True
         self.inInvestigate = False
         self.inSearch = False
         self.speed = 10
@@ -88,6 +88,11 @@ class Enemy(Character):
         self.numberOfTileSearched = 0
         self.searchCurrStep = 0
         self.currSearchPath = None
+        self.patrolNodes = patrolNodes
+        self.currPatrolNodeIndex = 0
+        self.alreadyGeneratedPatrolPath = False
+        self.currPatrolPath = None
+
         
 
     def __repr(self):
@@ -185,6 +190,7 @@ class Enemy(Character):
         elif self.alertMeter >= 50 and self.firstDetection == False:
             self.alertMeter = 200
             self.firstDetection = True
+            self.alreadyGeneratedPatrolPath = False
             self.inInvestigate = False
             self.inPatrol = False
             self.inChase = True
@@ -193,8 +199,10 @@ class Enemy(Character):
         elif self.alertMeter < 50 and self.firstDetection == True:
             self.firstDetection = False
             self.inSearch = True
+            self.alreadyGeneratedPatrolPath = False
             #self.searchRadius
             self.inPatrol = False
+            self.inChase = False
 
             #check if player out of all enemies' view
             
@@ -209,7 +217,7 @@ class Enemy(Character):
             targetRow = dR + searchTileTuple[0]
             dC = random.randint(-10,10)
             targetCol = dC + searchTileTuple[1]
-            if self.isInBounds(targetRow,targetCol,app):
+            if self.isInBounds(targetRow,targetCol,app) and (targetRow, targetCol) != (self.row,self.col):
                 tile = app.map[targetRow][targetCol]
                 if tile.object == None:
                     return (targetRow,targetCol)
