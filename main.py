@@ -124,36 +124,44 @@ def map1_onStep(app):
         map1_takeStep(app)
 
 def map1_takeStep(app):
+    
+
     app.counter += 1
     for enemy in app.enemyList:
+        print(enemy.alertMeter)
+
         #clear perception
-        print(f'chasing:{enemy.inChase},searching:{enemy.inSearch}')
-        enemy.clearCurrFOV(app)
-        enemy.clearHearing(app)
+        print(f'chasing:{enemy.inChase},searching:{enemy.inSearch},patrolling:{enemy.inPatrol}')
+
         #create perception if alive
         if enemy.HP > 0:
             enemy.createFOV(app)
             enemy.createHearingRadius(app)
             enemy.checkFOV(app)
+            
 
 
         #chase logic
-        if enemy.inChase == True and app.counter % 3 == 0:
+        if enemy.inChase == True and app.counter % 4 == 0:
             #siren goes off and all enemies alertmeter goes up to 300 and start chasing
             for enemy in app.enemyList:
                 if enemy.firstDetection == False:
                     enemy.alertMeter += 200
                     enemy.firstDetection = True
+                enemy.clearCurrFOV(app)
+                enemy.clearHearing(app)
                 enemy.takeAStep(app,app.playerRow,app.playerCol)
+                enemy.checkFOV(app)
+                
         elif enemy.inSearch == True and enemy.inChase == True:
             print('error: inchase and insearch both true')
 
-
-
+        #investigate logic
+        
         #patrol logic
         elif enemy.inPatrol == True and (enemy.inChase == True or enemy.inSearch == True):
             print(f'error: inpatrol and search:{enemy.inSearch} or chase:{enemy.inChase}')
-        elif enemy.inPatrol == True and app.counter % 6 == 0:
+        elif enemy.inPatrol == True and app.counter % 2 == 0:
             
             #generate a path if there isn't one
             if enemy.alreadyGeneratedPatrolPath == False:
@@ -188,7 +196,7 @@ def map1_takeStep(app):
             
 
         #search logic
-        elif enemy.inSearch == True and enemy.inChase == False and app.counter % 4 == 0:
+        elif enemy.inSearch == True and enemy.inChase == False and app.counter % 6 == 0:
             enemy.firstDetection = False
             #generate LKL of player and start search the radius.firstDetection used to increase alertmeter when player spotted
 
