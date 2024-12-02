@@ -19,9 +19,11 @@ class Character:
         self.currFOV = []
     
     def createFOV(self,app):
+
+
         #create FOV in the middle and store locations of all FOV as tuples in 2D list so when on movement can clear current FOV
         #when blocked by boundaires or object, the subsequent tiles should break
-        for i in range(5):
+        for i in range(6):
             if self.orientation == 'up':
                 if self.row - i >= 0:
                     tile = app.map[self.row - i][self.col]
@@ -33,7 +35,7 @@ class Character:
             elif self.orientation == 'down':
                 if self.row + i <= len(app.map) - 1:
                     tile = app.map[self.row + i][self.col]
-                    if tile.object == None and tile.character == None:
+                    if tile.object == None:
                         app.map[self.row + i][self.col].isInFOV = True
                         self.currFOV.append((self.row + i,self.col))
                     else:
@@ -41,7 +43,7 @@ class Character:
             elif self.orientation == 'right':
                 if self.col + i <= len(app.map[0]) - 1:
                     tile = app.map[self.row][self.col + i]
-                    if tile.object == None and tile.character == None:
+                    if tile.object == None:
                         app.map[self.row][self.col + i].isInFOV = True
                         self.currFOV.append((self.row,self.col + i))
                     else:
@@ -49,13 +51,234 @@ class Character:
             elif self.orientation == 'left':
                 if self.col - i >= 0:
                     tile = app.map[self.row][self.col - i]
-                    if tile.object == None and tile.character == None:
+                    if tile.object == None:
                         app.map[self.row][self.col - i].isInFOV = True
                         self.currFOV.append((self.row,self.col - i))
                     else:
                         break
             
-            #the 2 lines at the side
+            #the 2 lines at the side of the middle line
+            leftMiddleNoDrawCt = 0
+            rightMiddleNoDrawCt = 0
+            for i in range(6):
+                if self.orientation == 'up':
+                    targetRow,targetCol = self.row - i,self.col - 1
+                    if self.isInBounds(targetRow,targetCol,app):
+                        tile = app.map[targetRow][targetCol]
+                        if tile.object == None:
+                            if leftMiddleNoDrawCt < 2:
+                                leftMiddleNoDrawCt += 1
+                            else:
+                                app.map[targetRow][targetCol].isInFOV = True
+                                self.currFOV.append((targetRow,targetCol))
+                        else:
+                            break
+                    else:
+                        break
+                elif self.orientation == 'down':
+                    targetRow,targetCol = self.row + i,self.col - 1
+                    if self.isInBounds(targetRow,targetCol,app):
+                        tile = app.map[targetRow][targetCol]
+                        if tile.object == None:
+                            if leftMiddleNoDrawCt < 2:
+                                leftMiddleNoDrawCt += 1
+                            else:
+                                app.map[targetRow][targetCol].isInFOV = True
+                                self.currFOV.append((targetRow,targetCol))
+                        else:
+                            break
+                elif self.orientation == 'right':
+                    targetRow,targetCol = self.row - 1,self.col + i
+                    if self.isInBounds(targetRow,targetCol,app):
+                        tile = app.map[targetRow][targetCol]
+                        if tile.object == None:
+                            if leftMiddleNoDrawCt < 2:
+                                leftMiddleNoDrawCt += 1
+                            else:
+                                app.map[targetRow][targetCol].isInFOV = True
+                                self.currFOV.append((targetRow,targetCol))
+                        else:
+                            break
+                elif self.orientation == 'left':
+                    targetRow,targetCol = self.row - 1,self.col - i
+                    if self.isInBounds(targetRow,targetCol,app):
+                        tile = app.map[targetRow][targetCol]
+                        if tile.object == None:
+                            if leftMiddleNoDrawCt < 2:
+                                leftMiddleNoDrawCt += 1
+                            else:
+                                app.map[targetRow][targetCol].isInFOV = True
+                                self.currFOV.append((targetRow,targetCol))
+                        else:
+                            break
+            
+            for i in range(6):
+                if self.orientation == 'up':
+                    targetRow,targetCol = self.row - i,self.col + 1
+                    if self.isInBounds(targetRow,targetCol,app):
+                        tile = app.map[targetRow][targetCol]
+                        if tile.object == None:
+                            if rightMiddleNoDrawCt < 2:
+                                rightMiddleNoDrawCt += 1
+                            else:
+                                app.map[targetRow][targetCol].isInFOV = True
+                                self.currFOV.append((targetRow,targetCol))
+                        else:
+                            break
+                    else:
+                        break
+                elif self.orientation == 'down':
+                    targetRow,targetCol = self.row + i,self.col + 1
+                    if self.isInBounds(targetRow,targetCol,app):
+                        tile = app.map[targetRow][targetCol]
+                        if tile.object == None:
+                            if rightMiddleNoDrawCt < 2:
+                                rightMiddleNoDrawCt += 1
+                            else:
+                                app.map[targetRow][targetCol].isInFOV = True
+                                self.currFOV.append((targetRow,targetCol))
+                        else:
+                            break
+                elif self.orientation == 'right':
+                    targetRow,targetCol = self.row + 1,self.col + i
+                    if self.isInBounds(targetRow,targetCol,app):
+                        tile = app.map[targetRow][targetCol]
+                        if tile.object == None:
+                            if rightMiddleNoDrawCt < 2:
+                                rightMiddleNoDrawCt += 1
+                            else:
+                                app.map[targetRow][targetCol].isInFOV = True
+                                self.currFOV.append((targetRow,targetCol))
+                        else:
+                            break
+                elif self.orientation == 'left':
+                    targetRow,targetCol = self.row + 1,self.col - i
+                    if self.isInBounds(targetRow,targetCol,app):
+                        tile = app.map[targetRow][targetCol]
+                        if tile.object == None:
+                            if rightMiddleNoDrawCt < 2:
+                                rightMiddleNoDrawCt += 1
+                            else:
+                                app.map[targetRow][targetCol].isInFOV = True
+                                self.currFOV.append((targetRow,targetCol))
+                        else:
+                            break
+
+
+        #the 2 far end lines
+            leftMiddleNoDrawCt = 0
+            rightMiddleNoDrawCt = 0
+            for i in range(6):
+                if self.orientation == 'up':
+                    targetRow,targetCol = self.row - i,self.col - 2
+                    if self.isInBounds(targetRow,targetCol,app):
+                        tile1 = app.map[targetRow][targetCol]
+                        tile2 = app.map[targetRow][targetCol + 1]
+                        if tile1.object == None and tile2.object == None:
+                            if leftMiddleNoDrawCt < 3:
+                                leftMiddleNoDrawCt += 1
+                            else:
+                                app.map[targetRow][targetCol].isInFOV = True
+                                self.currFOV.append((targetRow,targetCol))
+                        else:
+                            break
+                    else:
+                        break
+                elif self.orientation == 'down':
+                    targetRow,targetCol = self.row + i,self.col - 2
+                    if self.isInBounds(targetRow,targetCol,app):
+                        tile1 = app.map[targetRow][targetCol]
+                        tile2 = app.map[targetRow][targetCol + 1]
+                        if tile1.object == None and tile2.object == None:
+                            if leftMiddleNoDrawCt < 3:
+                                leftMiddleNoDrawCt += 1
+                            else:
+                                app.map[targetRow][targetCol].isInFOV = True
+                                self.currFOV.append((targetRow,targetCol))
+                        else:
+                            break
+                elif self.orientation == 'right':
+                    targetRow,targetCol = self.row - 2,self.col + i
+                    if self.isInBounds(targetRow,targetCol,app):
+                        tile1 = app.map[targetRow][targetCol]
+                        tile2 = app.map[targetRow + 1][targetCol]
+                        if tile1.object == None and tile2.object == None:
+                            if leftMiddleNoDrawCt < 3:
+                                leftMiddleNoDrawCt += 1
+                            else:
+                                app.map[targetRow][targetCol].isInFOV = True
+                                self.currFOV.append((targetRow,targetCol))
+                        else:
+                            break
+                elif self.orientation == 'left':
+                    targetRow,targetCol = self.row - 2,self.col - i
+                    if self.isInBounds(targetRow,targetCol,app):
+                        tile1 = app.map[targetRow][targetCol]
+                        tile2 = app.map[targetRow + 1][targetCol]
+                        if tile1.object == None and tile2.object == None:
+                            if leftMiddleNoDrawCt < 3:
+                                leftMiddleNoDrawCt += 1
+                            else:
+                                app.map[targetRow][targetCol].isInFOV = True
+                                self.currFOV.append((targetRow,targetCol))
+                        else:
+                            break
+            
+            for i in range(6):
+                if self.orientation == 'up':
+                    targetRow,targetCol = self.row - i,self.col + 2
+                    if self.isInBounds(targetRow,targetCol,app):
+                        tile1 = app.map[targetRow][targetCol]
+                        tile2 = app.map[targetRow][targetCol - 1]
+                        if tile1.object == None and tile2.object == None:
+                            if rightMiddleNoDrawCt < 3:
+                                rightMiddleNoDrawCt += 1
+                            else:
+                                app.map[targetRow][targetCol].isInFOV = True
+                                self.currFOV.append((targetRow,targetCol))
+                        else:
+                            break
+                    else:
+                        break
+                elif self.orientation == 'down':
+                    targetRow,targetCol = self.row + i,self.col + 2
+                    if self.isInBounds(targetRow,targetCol,app):
+                        tile1 = app.map[targetRow][targetCol]
+                        tile2 = app.map[targetRow][targetCol - 1]
+                        if tile1.object == None and tile2.object == None:
+                            if rightMiddleNoDrawCt < 3:
+                                rightMiddleNoDrawCt += 1
+                            else:
+                                app.map[targetRow][targetCol].isInFOV = True
+                                self.currFOV.append((targetRow,targetCol))
+                        else:
+                            break
+                elif self.orientation == 'right':
+                    targetRow,targetCol = self.row + 2,self.col + i
+                    if self.isInBounds(targetRow,targetCol,app):
+                        tile1 = app.map[targetRow][targetCol]
+                        tile2 = app.map[targetRow - 1][targetCol]
+                        if tile1.object == None and tile2.object == None:
+                            if rightMiddleNoDrawCt < 3:
+                                rightMiddleNoDrawCt += 1
+                            else:
+                                app.map[targetRow][targetCol].isInFOV = True
+                                self.currFOV.append((targetRow,targetCol))
+                        else:
+                            break
+                elif self.orientation == 'left':
+                    targetRow,targetCol = self.row + 2,self.col - i
+                    if self.isInBounds(targetRow,targetCol,app):
+                        tile1 = app.map[targetRow][targetCol]
+                        tile2 = app.map[targetRow - 1][targetCol]
+                        if tile1.object == None and tile2.object == None:
+                            if rightMiddleNoDrawCt < 3:
+                                rightMiddleNoDrawCt += 1
+                            else:
+                                app.map[targetRow][targetCol].isInFOV = True
+                                self.currFOV.append((targetRow,targetCol))
+                        else:
+                            break
             
     def clearCurrFOV(self,app):
         for (row,col) in self.currFOV:
@@ -183,12 +406,12 @@ class Enemy(Character):
                 self.alertMeter = 0
 
         #top cap of alertmeter
-        if self.alertMeter > 300:
-            self.alertMeter = 299
+        if self.alertMeter > 50:
+            self.alertMeter = 49
 
         #if player is detected start chase and chase will last while
-        elif self.alertMeter >= 50 and self.firstDetection == False:
-            self.alertMeter = 200
+        elif self.alertMeter >= 20 and self.firstDetection == False:
+            self.alertMeter = 100
             self.firstDetection = True
             self.alreadyGeneratedPatrolPath = False
             self.inInvestigate = False
@@ -196,7 +419,7 @@ class Enemy(Character):
             self.inChase = True
 
         #player out of FOV, start searching
-        elif self.alertMeter < 50 and self.firstDetection == True:
+        elif self.alertMeter < 20 and self.firstDetection == True:
             self.firstDetection = False
             self.inSearch = True
             self.alreadyGeneratedPatrolPath = False
@@ -205,7 +428,8 @@ class Enemy(Character):
             self.inChase = False
 
             #check if player out of all enemies' view
-            
+        
+        
                     
                     
 
@@ -404,8 +628,7 @@ class Player(Character):
 
     def checkIfInHearingRadius(self,app):
         pass
-        '''for enemy in app.enemyList:
-            if (self.row,self.col) in enemy.currHearing and enemy.inChase == False:
+        '''if (self.row,self.col) in enemy.currHearing and enemy.inChase == False:
                 enemy.heardSomething((self.row,self.col))'''
                 
 
