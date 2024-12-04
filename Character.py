@@ -1,3 +1,4 @@
+
 from cmu_graphics import *
 from Tiles import *
 from Character import *
@@ -290,6 +291,7 @@ class Character:
 class Enemy(Character):
     def __init__(self,name,left,top,width,height,row,col,patrolNodes):
         super().__init__(name,left,top,width,height,row,col)
+        self.isStabbing = False
         self.HP = 100
         self.patrolLogic = patrolNodes
         self.dx = 1
@@ -333,7 +335,10 @@ class Enemy(Character):
             drawImage(app.enemyPicRight,self.left,self.top,width=self.width, height=self.height)
         elif self.orientation == 'left':
             drawImage(app.enemyPicLeft,self.left,self.top,width=self.width, height=self.height)'''
-        if self.HP > 0:
+        if self.HP > 0 and self.isStabbing == True:
+            #draw stabbing animation
+            pass
+        elif self.HP > 0:
             drawRect(self.left,self.top,self.width,self.height,fill = 'red')
             '''self.createFOV(app)
             self.createHearingRadius(app)
@@ -525,12 +530,12 @@ class Enemy(Character):
             print('took a step')
                 
 
-    def stab(self,app):
+    def stabPlayer(self,app):
         self.playMeleeAnimation()
-        app.player.HP -= 30
+        app.playerHP -= 45
     
     def playMeleeAnimation(self):
-        pass
+        self.isStabbing = True
 
     #pathfinding
 
@@ -616,7 +621,6 @@ class Enemy(Character):
 class Player(Character):
     def __init__(self,name,left=0,top=0,width=0,height=0,row=0,col=0):
         super().__init__(name,left,top,width,height,row,col)
-        self.HP = 100
         self.speed = 10
         self.isCrouched = False
         
