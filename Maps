@@ -39,7 +39,7 @@ def makeMap1(app):
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,4,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0],
-        [0,0,0,0,4,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0],
+        [0,0,0,0,4,0,0,0,0,0,0,4,0,0,0,3,0,0,0,0],
         [0,0,0,0,4,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0],
         [0,0,4,4,4,0,0,0,0,0,0,4,4,4,4,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -53,9 +53,9 @@ def makeMap1(app):
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,4,4,4,4,0,0,0,0,0,0,0,0,0,4,4,4,4,4,0],
         [0,0,0,0,4,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0],
+        [0,0,0,0,4,0,0,0,0,0,0,0,0,0,4,0,0,0,0,3],
         [0,0,0,0,4,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0],
-        [0,0,0,0,4,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0],
         
     ]
     for row in range(app.rows):
@@ -73,8 +73,10 @@ def makeMap1(app):
                     app.player.setLocation(left,top,cellWidth,cellHeight,row,col)
                     app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,app.player)
                 elif app.map[row][col] == 3:
-                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,Enemy('Liquid',left,top,cellWidth,cellHeight,row,col,
-                                                                                  [(0,0),(10,10)]))
+                    Liquid = Enemy('Liquid',left,top,cellWidth,cellHeight,row,col,
+                                [(0,18),(12,18)])
+                    app.enemyList.append(Liquid)
+                    app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,Liquid)
                 elif app.map[row][col] == 4:
                     app.map[row][col] = Tiles(left,top,cellWidth,cellHeight,None,Wall(left,top,cellWidth,cellHeight,row,col))
                 elif app.map[row][col] == 5:
