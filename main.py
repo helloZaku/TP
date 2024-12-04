@@ -1,3 +1,6 @@
+#images and sounds and a* from internet. rest from me unless noted otherwise. 
+#need to implement dead logic for enemies
+
 from cmu_graphics import *
 from Tiles import *
 from Character import *
@@ -13,16 +16,39 @@ def loadImage(url):
     cmuImage = CMUImage(pilImage)
     return cmuImage
 
+def loadSpritePilImagesOfEnemies(spriteSheet):
+    spritestrip = spriteSheet
+    enemySpritesUp = []
+    enemyStabUp = None
+    enemySpritesRight = []
+    enemyStabRight = None
+    enemySpritesDown = []
+    enemyStabDown = None
+    enemySpritesLeft = []
+    enemyStabLeft = None
+    #Up
+    spritePilImages = [ ]
+    for i in range(6):
+        spriteImage = spritestrip.crop((30+260*i, 30, 230+260*i, 250))
+        spritePilImages.append(spriteImage)
+    return spritePilImages
 
 #appStart
 def onAppStart(app):
+    app.playerHP = 100
+
+    #load enemySprites
+    #spriteSheet = CMUImage(Image.open('snakeSprites.jpeg'))
+    app.enemySpriteIndex = 0
+    #app.enemySpritesUp,app.enemyStabUp,app.enemySpritesRight,app.enemyStabRight,app.enemySpritesDown,app.enemyStabDown,app.enemySpritesLeft, app.enemyStabLeft= loadSpritePilImagesOfEnemies(spriteSheet)
+
     app.enemyList = []
     app.rows = 20
     app.cols = 20
     app.boardLeft = 50
     app.boardTop = 75
-    app.boardWidth = 1000
-    app.boardHeight = 1000
+    app.boardWidth = 700
+    app.boardHeight = 700
     app.cellBorderWidth = 2
     app.map = []
     app.player = Player('snake')
@@ -49,7 +75,7 @@ def onAppStart(app):
     app.enemyPicDown = loadImage('https://www.emoji.co.uk/files/microsoft-emojis/symbols-windows10/10303-up-pointing-red-triangle.png')
     app.enemyPicRight = loadImage('https://commons.wikimedia.org/wiki/File:TriangleArrow-Left-red.png')'''
     app.titleScreen = CMUImage(Image.open('titleScreen.jpeg'))
-
+    app.gameOverScreen = CMUImage(Image.open('gameOverScreen.jpg'))
 ############################################################
 # Start Screen
 ############################################################
@@ -60,6 +86,9 @@ def start_redrawAll(app):
 def start_onKeyPress(app, key):
     if key == 'space':
         setActiveScreen('map1')
+
+    elif key == 'g':
+        setActiveScreen('gameOverScreen')
 
 ############################################################
 # map1 Screen
@@ -124,7 +153,8 @@ def map1_onStep(app):
         map1_takeStep(app)
 
 def map1_takeStep(app):
-    
+    if app.playerHP < 0:
+        setActiveScreen('gameOverScreen')
 
     app.counter += 1
     for enemy in app.enemyList:
@@ -144,14 +174,23 @@ def map1_takeStep(app):
         #chase logic
         if enemy.inChase == True and app.counter % 4 == 0:
             #siren goes off and all enemies alertmeter goes up to 300 and start chasing
+            #first get out of stabbing animation
+            if enemy.isStabbing == True:
+                enemy.isStabbing = False
             for enemy in app.enemyList:
                 if enemy.firstDetection == False:
                     enemy.alertMeter += 200
                     enemy.firstDetection = True
                 enemy.clearCurrFOV(app)
                 enemy.clearHearing(app)
-                enemy.takeAStep(app,app.playerRow,app.playerCol)
-                enemy.checkFOV(app)
+                if isRightNextToEachOther((app.playerRow,app.playerCol),(enemy.row,enemy.col)):
+                    enemy.stabPlayer(app)
+                    enemy.checkFOV(app)
+                else:
+                    enemy.takeAStep(app,app.playerRow,app.playerCol)
+                    enemy.checkFOV(app)
+                
+                    
                 
         elif enemy.inSearch == True and enemy.inChase == True:
             print('error: inchase and insearch both true')
@@ -161,7 +200,7 @@ def map1_takeStep(app):
         #patrol logic
         elif enemy.inPatrol == True and (enemy.inChase == True or enemy.inSearch == True):
             print(f'error: inpatrol and search:{enemy.inSearch} or chase:{enemy.inChase}')
-        elif enemy.inPatrol == True and app.counter % 2 == 0:
+        elif enemy.inPatrol == True and app.counter % 8 == 0:
             
             #generate a path if there isn't one
             if enemy.alreadyGeneratedPatrolPath == False:
@@ -196,7 +235,7 @@ def map1_takeStep(app):
             
 
         #search logic
-        elif enemy.inSearch == True and enemy.inChase == False and app.counter % 6 == 0:
+        elif enemy.inSearch == True and enemy.inChase == False and app.counter % 5 == 0:
             enemy.firstDetection = False
             #generate LKL of player and start search the radius.firstDetection used to increase alertmeter when player spotted
 
@@ -264,8 +303,21 @@ def map1_takeStep(app):
                         else:
                             enemy.searchCurrStep = 0
         
-                
-                    
+############################################################
+# GameOver
+############################################################  
+def gameOverScreen_redrawAll(app):
+    drawImage(app.gameOverScreen,0,0)
+    drawLabel('Press Any Key To Continue', 50, 50,
+          size=20, font='arial',
+          bold=True, italic=False,
+          fill='black', border=None, borderWidth=2,
+          opacity=100, rotateAngle=0, align='center')
+
+def gameOverScreen_onKeyPress(app, key):
+    if key == 'space':
+        app.playerHP = 100
+        setActiveScreen('map1')
 
 ############################################################
 # Main
