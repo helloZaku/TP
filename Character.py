@@ -1,3 +1,4 @@
+#elite class enemies are currently broken. to see it on the board, go to Maps.py
 
 from cmu_graphics import *
 from Tiles import *
@@ -327,14 +328,6 @@ class Enemy(Character):
         return hash(str(self))
 
     def draw(self,app):
-        '''if self.orientation == 'up':
-            drawImage(app.enemyPicUp,self.left,self.top,width=self.width, height=self.height)
-        elif self.orientation == 'down':
-            drawImage(app.enemyPicDown,self.left,self.top,width=self.width, height=self.height)
-        elif self.orientation == 'right':
-            drawImage(app.enemyPicRight,self.left,self.top,width=self.width, height=self.height)
-        elif self.orientation == 'left':
-            drawImage(app.enemyPicLeft,self.left,self.top,width=self.width, height=self.height)'''
         if self.HP > 0 and self.isStabbing == True:
             #draw stabbing animation
             pass
@@ -410,12 +403,8 @@ class Enemy(Character):
             self.inPatrol = False
             self.inChase = False
 
-            #check if player out of all enemies' view
-        
-        
-                    
-                    
-
+            #check if player out of all enemies' vie
+                
     #randomly select a tile in a square of 4 around the LKL
     def generateRandomSearchTile(self,app,searchTileTuple):
         valid = False
@@ -429,71 +418,34 @@ class Enemy(Character):
                 if tile.object == None:
                     return (targetRow,targetCol)
 
+    def move(self,app,dRow,dCol):
+        #if app.counter % 10 == 0:
+        if dRow > 0:
+            self.orientation = 'down'
+        elif dRow < 0:
+            self.orientation = 'up'
+        elif dCol > 0:
+            self.orientation = 'right'
+        elif dCol < 0:
+            self.orientation = 'left'
         
-
-        
-    def heardSomething(self,targetTileRowAndCol):
-        print("I heard something")
-        self.investigate(app,targetTileRowAndCol)
-
-    #investigate. is sus counter is 0, just look around before resume normal. if more than 1, start searching
-    def investigate(self,app,susTile):
-        print('investigating!')
-        
-        self.moveToLocation((self.row,self.col),susTile)
-        if self.susCounter == 0:
-            self.lookAround()
-            
-            
-    def lookAround(self):
-        print('looking around!')
-        A = time.time()
-        B = time.time()
-        timer = B - A
-        while timer < 4:
-            if timer < 1:
-                self.orientation = 'up'
-            elif 1 < timer < 2:
-                self.orientation = 'right'
-            elif 2 < timer < 3:
-                self.orientation = 'down'
-            elif 3 < timer < 4:
-                self.orientation = 'left'
-            B = time.time()
-            timer = B - A
-                 
-
-    #patrol logic
-    def patrol(self,app):
-        pass
-        
-    #chase logic
-    def startChase(self,app):
-        self.startedChase = True
-        while self.inChase == True:
-            distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
-            #while distance more than 5, take 5 steps than recalculate position
-            if distance > 5:
-                #take 5 steps while take 1 when closer
-                self.takeXStepsTowardsLocation((self.row,self.col),(app.playerRow, app.playerCol),5)
-            elif 3 < distance <= 5:
-                self.takeXStepsTowardsLocation((self.row,self.col),(app.playerRow, app.playerCol),1)
-            else:
-            #distance = abs(self.row - app.playerRow) + abs(self.col - app.playerCol)
-                self.inChase = False
-                self.startedChase = False
-                self.alertMeter = -10
-
-            #melee logic
-            #if isRightNextToEachOther((self.row,self.col),(app.player.row,app.player.col)):
-                #self.melee(app)
+        self.clearCurrFOV(app)
+         
+        app.map[self.row][self.col].character = None 
+        self.row += dRow
+        self.top += dRow * self.height
+        self.col += dCol
+        self.left += dCol * self.width
+        app.map[self.row][self.col].character = self
 
     def takeAStep(self,app,targetRow,targetCol):
         path = []
         visited = set()
         pathFindingMap = self.makePathFindingMap(app)
+        
         start = (self.row,self.col)
         end = (targetRow,targetCol)
+        
         path = findShortestPath(pathFindingMap, start, end, path,visited)
         
         if path == None:
@@ -519,12 +471,12 @@ class Enemy(Character):
 
     #make a 2D pathfinding map where 0 is walkable and 1 is not. The same row and col as the game map
     def makePathFindingMap(self,app):
+        
         pathFindingMap = []
         for row in range(app.rows):
             pathFindingMap.append([])
             for col in range(app.cols):
                 tile = app.map[row][col]
-                #if (tile.character != None and tile.character != self and tile.character != Player) or tile.object != None:
                 if (tile.character == Enemy and (tile.row,tile.col) != (self.row,self.col)) or tile.object != None:
                     pathFindingMap[row].append(1)
                 else:
@@ -533,66 +485,102 @@ class Enemy(Character):
         return pathFindingMap
 
     
-    #move to location
-    def takeXStepsTowardsLocation(self,start,end,X):
-        print(f'taking {X} steps!')
-        path = []
-        visited = set()
-        pathFindingMap = self.makePathFindingMap(app)
-        path = findShortestPath(pathFindingMap, start, end, path,visited)
-        currStep = 0
-        print('we are here')
-        if path == None:
-            print('''I can't get there''')
-        else:
-            while currStep < X and len(path) > 0:
-                if app.counter % 10 == 0: 
-                    targetRow = path[0][0]
-                    targetCol = path[0][1]
-                    dRow = targetRow - self.row
-                    dCol = targetCol - self.col
-                    self.move(app,dRow,dCol)
-                    path.pop(0)
-                    currStep += 1
     
-
-    def moveToLocation(self,start,end):
-        path = []
-        visited = set()
-        pathFindingMap = self.makePathFindingMap(app)
-        path = findShortestPath(pathFindingMap, start, end, path,visited)
-        if path == None:
-            print('''I can't get there''')
-        else:
-            while self.inChase == False and len(path) > 0:
-                targetRow = path[0][0]
-                targetCol = path[0][1]
-                dRow = targetRow - self.row
-                dCol = targetCol - self.col    
-                self.move(app,dRow,dCol)
-                path.pop(0)
-    
-
-    #have not implemented collision logic for objects and characters
-    def move(self,app,dRow,dCol):
-        #if app.counter % 10 == 0:
-        if dRow > 0:
-            self.orientation = 'down'
-        elif dRow < 0:
-            self.orientation = 'up'
-        elif dCol > 0:
-            self.orientation = 'right'
-        elif dCol < 0:
-            self.orientation = 'left'
         
-        self.clearCurrFOV(app)
-         
-        app.map[self.row][self.col].character = None 
-        self.row += dRow
-        self.top += dRow * self.height
-        self.col += dCol
-        self.left += dCol * self.width
-        app.map[self.row][self.col].character = self
+#elite use a*
+class Elite(Enemy):
+    def __init__(self,name,left,top,width,height,row,col,patrolNodes):
+        super().__init__(name,left,top,width,height,row,col,patrolNodes)
+        
+
+        
+
+    def __repr(self):
+        return f'{self.name}'
+    
+    def __hash__(self):
+        return hash(str(self))
+
+    def draw(self,app):
+        if self.HP > 0 and self.isStabbing == True:
+            #draw stabbing animation
+            pass
+        elif self.HP > 0:
+            if self.orientation == 'up':
+                drawImage(app.eliteUp,self.left,self.top,width=self.width, height=self.height)
+            elif self.orientation == 'down':
+                drawImage(app.eliteDown ,self.left,self.top,width=self.width, height=self.height)
+            elif self.orientation == 'right':
+                drawImage(app.eliteRight,self.left,self.top,width=self.width, height=self.height)
+            elif self.orientation == 'left':
+                drawImage(app.eliteLeft,self.left,self.top,width=self.width, height=self.height)
+            
+        elif self.HP == 0:
+            
+            drawImage(app.eliteDead,self.left,self.top,width=self.width, height=self.height)
+        
+        #because this function is called on step in redrawall, use it to check if player is in fov
+        
+
+    def die(self):
+        self.HP = 0
+
+    def isInBounds(self,row,col,app):
+        if row >= 0 and row < app.rows and col >= 0 and col < app.cols:
+            return True
+        return False
+    
+    #Perception:
+
+    #FOV related stuff
+    def createFOV(self, app):
+        super().createFOV(app)
+    
+    def clearCurrFOV(self, app):
+        super().clearCurrFOV(app)
+    
+    def checkFOV(self,app):
+        super().checkFOV(app)
+       
+                
+    #randomly select a tile in a square of 4 around the LKL
+    def generateRandomSearchTile(self,app,searchTileTuple):
+        super().checkFOV(app)
+        
+
+
+    def takeAStep(self,app,targetRow,targetCol):
+        path = []
+        visited = set()
+        pathFindingMap = self.makePathFindingMap(app)
+        start = (self.row,self.col)
+        end = (targetRow,targetCol)
+        path = astar(pathFindingMap, start, end)
+        
+        if path == None:
+            print('''I can't get there''')
+        else:
+            targetRow = path[0][0]
+            targetCol = path[0][1]
+            dRow = targetRow - self.row
+            dCol = targetCol - self.col
+            self.move(app,dRow,dCol)
+            path.pop(0)
+            print('took a step')
+                
+
+    def stabPlayer(self,app):
+        self.playMeleeAnimation()
+        app.playerHP -= 50
+    
+    def playMeleeAnimation(self):
+        self.isStabbing = True
+
+    #pathfinding
+
+    #make a 2D pathfinding map where 0 is walkable and 1 is not. The same row and col as the game map
+    def makePathFindingMap(self,app):
+        super().makePathFindingMap(self,app)
         
 
 
