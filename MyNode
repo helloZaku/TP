@@ -3,23 +3,10 @@
 #talked to Austin and he said i should try to find shortcuts in the paths to optimize it
 #squad leader uses a*, other enemies use this
 #problem where enemy go back and forth between the same tiles becasue favor tiles closer to the player
+#solution: enemy move multiple tiles before updating
 
-#have 2 paths to see which one is shorter
-'''def findShortestPath(maze,startLocation,targetLocation,path,visited):
-    #print(f"Currently at: {startLocation}, Target: {targetLocation}, Path: {path},visited:{visited}")
-    path1 = findPath(maze,startLocation,targetLocation,path,visited)
-    print(path1)
-    path2 = findPath(maze,targetLocation,startLocation,path,visited)
-    print(path2)
-    if path1 == None or path2 == None:
-        return None
-    elif len(path1) < len(path2):
-        return path1
-    else:
-        return path2[::-1]'''
-    
-    
 def findShortestPath(maze,startLocation,targetLocation,path,visited):
+    
     if isRightNextToEachOther(startLocation,targetLocation):
         path.append(targetLocation)       
         return path
@@ -40,7 +27,7 @@ def findShortestPath(maze,startLocation,targetLocation,path,visited):
         
 
         sortedNeighbors = sortByClosestToFurthest(neighbors,targetLocation)
-        #print(f"sortedNeighbors: {sortedNeighbors}")
+        
         #tile is a tuple of the row and col of the tile
         for tile in sortedNeighbors:
             #if isLegalMove(maze,tile):
