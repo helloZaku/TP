@@ -23,9 +23,7 @@ class Tiles:
         elif self.character != None:
             self.character.draw(app)
         elif self.isInFOV == True:
-            if app.debuggingMode == True:
-                drawRect(self.left,self.top,self.width,self.height,fill = 'yellow')
+            drawRect(self.left,self.top,self.width,self.height,fill = 'yellow',opacity = 50)
         elif self.isInHearing == True:
-            if app.debuggingMode == True:
-                drawRect(self.left,self.top,self.width,self.height,fill = 'lightBlue',opacity = 70)
+            drawRect(self.left,self.top,self.width,self.height,fill = 'lightBlue',opacity = 70)
         
