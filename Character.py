@@ -339,15 +339,18 @@ class Enemy(Character):
             #draw stabbing animation
             pass
         elif self.HP > 0:
-            drawRect(self.left,self.top,self.width,self.height,fill = 'red')
-            '''self.createFOV(app)
-            self.createHearingRadius(app)
-            self.checkFOV(app)'''
+            if self.orientation == 'up':
+                drawImage(app.enemyUp,self.left,self.top,width=self.width, height=self.height)
+            elif self.orientation == 'down':
+                drawImage(app.enemyDown ,self.left,self.top,width=self.width, height=self.height)
+            elif self.orientation == 'right':
+                drawImage(app.enemyRight,self.left,self.top,width=self.width, height=self.height)
+            elif self.orientation == 'left':
+                drawImage(app.enemyLeft,self.left,self.top,width=self.width, height=self.height)
             
         elif self.HP == 0:
-            '''self.clearCurrFOV(app)
-            self.clearHearing(app)'''
-            drawRect(self.left,self.top,self.width,self.height,fill = 'purple')
+            
+            drawImage(app.enemyDead,self.left,self.top,width=self.width, height=self.height)
         
         #because this function is called on step in redrawall, use it to check if player is in fov
         
@@ -364,32 +367,7 @@ class Enemy(Character):
 
     #Hearing
     #yes if I can hear my roommate dancing enemies can hear through wall
-    def createHearingRadius(self,app):
-        #if app.debuggingMode == True:
-                #drawCircle(self.left + self.width / 2,self.top + self.height / 2,self.hearingRadius * self.width, fill = None,border='black', borderWidth=5,align='center')
-        
-        #horizontal rectangle
-        for currRow in range(-1,2):
-            for currCol in range(-3,4):
-                targetRow,targetCol = self.row + currRow, self.col + currCol
-                if self.isInBounds(targetRow,targetCol,app):
-                    app.map[targetRow][targetCol].isInHearing = True
-                    self.currHearing.append((targetRow,targetCol))
-
-        #vertical rectangle
-        for currRow in range(-2,3):
-            for currCol in range(-2,3):
-                targetRow,targetCol = self.row + currRow, self.col + currCol
-                if self.isInBounds(targetRow,targetCol,app):
-                    app.map[targetRow][targetCol].isInHearing = True
-                    self.currHearing.append((targetRow,targetCol)) 
-
     
-
-    def clearHearing(self,app):
-        for row,col in self.currHearing:
-            app.map[row][col].isInHearing = False
-        self.currHearing = []
 
     #FOV related stuff
     def createFOV(self, app):
@@ -532,7 +510,7 @@ class Enemy(Character):
 
     def stabPlayer(self,app):
         self.playMeleeAnimation()
-        app.playerHP -= 45
+        app.playerHP -= 50
     
     def playMeleeAnimation(self):
         self.isStabbing = True
@@ -608,7 +586,7 @@ class Enemy(Character):
             self.orientation = 'left'
         
         self.clearCurrFOV(app)
-        self.clearHearing(app) 
+         
         app.map[self.row][self.col].character = None 
         self.row += dRow
         self.top += dRow * self.height
@@ -626,8 +604,15 @@ class Player(Character):
         
     
     def draw(self,app):
-        drawRect(self.left,self.top,self.width,self.height,fill = 'blue')
-    
+        if self.orientation == 'up':
+            drawImage(app.playerUp,self.left,self.top,width=self.width, height=self.height)
+        elif self.orientation == 'down':
+            drawImage(app.playerDown ,self.left,self.top,width=self.width, height=self.height)
+        elif self.orientation == 'right':
+            drawImage(app.playerRight,self.left,self.top,width=self.width, height=self.height)
+        elif self.orientation == 'left':
+            drawImage(app.playerLeft,self.left,self.top,width=self.width, height=self.height)
+
     #detection related:
 
     def checkIfInHearingRadius(self,app):
@@ -716,4 +701,3 @@ class Player(Character):
                 if self.isCrouched == False:
                     self.checkIfInHearingRadius(app)
                 
-
