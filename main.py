@@ -53,7 +53,7 @@ def onAppStart(app):
 ############################################################
 
 def start_redrawAll(app):
-    drawImage(app.titleScreen,0,0,width = 700, height = 700)
+    drawImage(app.titleScreen,0,0,width = 1100, height = 800)
 
 def start_onKeyPress(app, key):
     if key == 'space':
@@ -63,7 +63,7 @@ def start_onKeyPress(app, key):
 # tutorialScreen
 ############################################################
 def tutorialScreen_redrawAll(app):
-    drawImage(app.tutorialScreen,0,0,width = 800,height = 700)
+    drawImage(app.tutorialScreen,0,0,width = 1200,height = 800)
 
 def tutorialScreen_onKeyPress(app, key):
     if key == 'space':
@@ -77,7 +77,7 @@ def map1_onScreenActivate(app):
     app.startTime = time.time()
     app.currTime = time.time()
     app.timeDifference = 0
-    app.winTime = 10
+    app.winTime = 30
 
     #reinitialize variables
     app.playerHP = 100
@@ -87,7 +87,7 @@ def map1_onScreenActivate(app):
     app.cols = 20
     app.boardLeft = 50
     app.boardTop = 75
-    app.boardWidth = 700
+    app.boardWidth = 500
     app.boardHeight = 700
     app.cellBorderWidth = 2
     app.map = []
@@ -198,7 +198,7 @@ def map1_takeStep(app):
 
 
         #chase logic
-            if enemy.inChase == True and app.counter % 4 == 0:
+            if enemy.inChase == True and app.counter % 5 == 0:
                 #siren goes off and all enemies alertmeter goes up to 300 and start chasing
                 #first get out of stabbing animation
                 if enemy.isStabbing == True:
@@ -331,7 +331,7 @@ def map2_onScreenActivate(app):
     app.startTime = time.time()
     app.currTime = time.time()
     app.timeDifference = 0
-    app.winTime = 10
+    app.winTime = 30
 
     #reinitialize variables
     app.playerHP = 100
@@ -341,8 +341,8 @@ def map2_onScreenActivate(app):
     app.cols = 20
     app.boardLeft = 50
     app.boardTop = 75
-    app.boardWidth = 700
-    app.boardHeight = 900
+    app.boardWidth = 500
+    app.boardHeight = 700
     app.cellBorderWidth = 2
     app.map = []
     app.player = Player('snake')
@@ -415,7 +415,7 @@ def map2_onKeyHold(app,keys):
 
 def map2_onStep(app):
     if not app.paused: 
-        map1_takeStep(app)
+        map2_takeStep(app)
 
 def map2_takeStep(app):
     app.currTime = time.time()
@@ -438,7 +438,7 @@ def map2_takeStep(app):
 
 
         #chase logic
-            if enemy.inChase == True and app.counter % 4 == 0:
+            if enemy.inChase == True and app.counter % 5 == 0:
                 #siren goes off and all enemies alertmeter goes up to 300 and start chasing
                 #first get out of stabbing animation
                 if enemy.isStabbing == True:
@@ -564,7 +564,7 @@ def map2_takeStep(app):
 # winScreen
 ############################################################  
 def winScreen_redrawAll(app):
-    drawImage(app.winScreen,0,0)
+    drawImage(app.winScreen,0,0,width = 1200,height = 800)
     
 def winScreen_onKeyPress(app, key):
     if key == 'space':
@@ -574,7 +574,7 @@ def winScreen_onKeyPress(app, key):
 # GameOver
 ############################################################  
 def gameOverScreen_redrawAll(app):
-    drawImage(app.gameOverScreen,0,0)
+    drawImage(app.gameOverScreen,0,0,width = 1200,height = 800)
     
 def gameOverScreen_onKeyPress(app, key):
     if key == 'space':
