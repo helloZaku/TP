@@ -18,6 +18,8 @@ class Tiles:
         return f'left = {self.left},top = {self.top}, width = {self.width}, height = {self.height}, character = {self.character}'
 
     def draw(self,app):
+        if app.removeTileImage == True:
+            drawImage(app.ground,self.left,self.top,width=self.width, height=self.height)
         if self.object != None:
             self.object.draw(app)
         elif self.character != None:
